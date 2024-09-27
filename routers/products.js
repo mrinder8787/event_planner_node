@@ -20,12 +20,16 @@ const adminRegistrion = require('../Controller/adminregistrion');
 const fsmTokenRoute = require('../Controller/fsmtokenController');
 
 const getbussiness =require('../ControllergetApi/getBussiness');
+
+const paymentGet = require("../Controller/paymentgetController");
+const payment = require("../Controller/paymentController");
 //--------------------------------------------------------------------------------
 
 router.post('/crewUpdate',crewUpdateController.updateCrewEntry);
 
 router.get('/getBussiness',getbussiness.getbussiness);
-
+router.get("/paymentGet",paymentGet.paymentget);
+router.post('/paymentAdd',payment.payment),
 //====================================================================================
 
 router.post('/registrion',adminRegistrion.registraionApi);

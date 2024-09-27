@@ -11,7 +11,9 @@ exports.loginApi = async (req, res) => {
   const { email, password } = req.body;
   try {
     const existingUser = await registrionapi.findOne({email});
+    const crewexistingUser = await crewentry.findOne({crewEmail:email});
     if (existingUser) {
+      console.log("login Successfully",existingUser)
       const passwordMatch = await bcrypt.compare(password, existingUser.password);
       if (passwordMatch) {
         const expiresIn = 24 * 60 * 60;
@@ -20,8 +22,6 @@ exports.loginApi = async (req, res) => {
           process.env.ACCESS_SECRET_TOKEN,
           { expiresIn: expiresIn }
         );
-
-        
         existingUser.Jwttoken = token;
         await existingUser.save();
         console.log("login Successfully",existingUser)
@@ -36,10 +36,8 @@ exports.loginApi = async (req, res) => {
           message: 'Incorrect password.',
         });
       }
-    } else {
-      const crewexistingUser = await crewentry.findOne({crewEmail:email});
-      console.log("crew login---",crewexistingUser);
-      const passwordMatch = await bcrypt.compare(password, crewexistingUser.crewpassword);
+    } else if(crewexistingUser){
+        const passwordMatch = await bcrypt.compare(password, crewexistingUser.crewpassword);
       if (passwordMatch) {
         const expiresIn = 24 * 60 * 60;
         const token = jwt.sign(

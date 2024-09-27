@@ -10,7 +10,6 @@ const customerEntry=require('../model/customerentryModel');
 const enquiery=require('../model/enquiryModel');
 
 const onlyUser =require('../model/customerentryModel');
-
 require('dotenv').config();
  
 
