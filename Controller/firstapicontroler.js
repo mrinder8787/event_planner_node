@@ -11,100 +11,6 @@ const enquiery=require('../model/enquiryModel');
 
 const onlyUser =require('../model/customerentryModel');
 require('dotenv').config();
- 
-
-
-function generateCustomerRef() {
-  const maxLength = 15; 
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let refNumber = '';
-  for (let i = 0; i < maxLength; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    refNumber += characters.charAt(randomIndex);
-  }
-  return refNumber;
-}
-
-//-----------------------------------Registrion API -------------------------------------------------
-
-exports.registraionApi =async (req,res)=>{
-  const { email,password } = req.body;
-  try{
-    const existingUser = await registrionapi.findOne({email});
-    
-    if(existingUser){
-      const passwordMatch =await bcrept.compare(password,existingUser.password);
-      if(passwordMatch){
-        const expiresIn = 24 * 60 * 60; 
-        const token = jwt.sign(
-          { userId: existingUser._id, email: existingUser.email },
-          process.env.ACCESS_SECRET_TOKEN,
-          { expiresIn:expiresIn}
-        );
-
-       
-        existingUser.Jwttoken = token;
-        await existingUser.save();
-
-        return res.status(200).json({
-          error: false,
-           message:'Login suceessfully!!',
-          data:existingUser,
-          });
-      }else{
-        return res.status(400).json({
-          error: true,
-          message: 'Password does not match',
-        });
-      }
-      
-    }else{
-       
-    const hasPassword =await bcrept.hash(password,10);
-
-    const custmerefNo = generateCustomerRef();
-    const registraion= registrionapi({
-      email,
-      password:hasPassword,
-      Jwttoken:jwttoken,
-      customerRef:custmerefNo,
-    });
-  
-    const registraionData= await registraion.save();
-      return res.status(200).json({
-        error: false,
-          msg: "Register User Successfully!",
-         data:registraionData,
-        });
-    }
-   
-
-  }catch (error) {
-    if (error.name === 'ValidationError') {
-      const errorMessage = Object.values(error.errors)
-        .map(error => error.message)
-        .join(', ');
-  
-      console.log('Validation Error:', errorMessage);
-  
-      return res.status(400).json({
-        error: true,
-        message: errorMessage,
-      });
-    } else {
-      // Handle other errors
-      console.log('Error:', error);
-  
-      return res.status(400).json({
-        error: true,
-        message: 'Enter valid fields!',
-      });
-    }
-  }
-  
-
-}
-//----------------------------Crew Entry Controller------------------------------------
 
 
 
@@ -124,10 +30,6 @@ exports.getCrewByCustomerRef = async (req, res) => {
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
     console.log('tokendecode', decodedToken);
 
-    
-  
-
-   
     const user = await User.findOne({customerRef: decodedToken.customerRef });
     if (!decodedToken || !decodedToken.customerRef) {
       const userTokenMatch = await bcrypt.compare(authToken, user.Jwttoken);
@@ -147,7 +49,7 @@ exports.getCrewByCustomerRef = async (req, res) => {
     }
 
     const customerRef = user.customerRef; 
-    const crewEntries = await crewentry.find({ customerRef });
+    const crewEntries = await crewentry.find({ customerRef,__v:0 });
 
     if (!crewEntries || crewEntries.length === 0) {
       return res.status(404).json({ error: true, message: 'No crew entries found for this customer' });
@@ -167,23 +69,7 @@ exports.getCrewByCustomerRef = async (req, res) => {
   }
 };
 
-//------------------------------------Customer entry Number -------------------
-const generateRandomNumber = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
 
-const generateCustomerId = (customerName, mobileNumber) => {
-  const namePart = customerName.substring(0, 4).toUpperCase(); // Take first 4 characters of name
-  const randomPart = generateRandomNumber(100000, 999999); // Generate random 6-digit number
-  return `${namePart}${randomPart}`;
-};
-
-//-------------------------------------Customer Entry --------------------------------------------
-
-
-
-
-//---------------------------------------------Get Crew :List------------------------
 
 
 exports.getCustomerlist = async (req, res) => {
@@ -228,7 +114,7 @@ exports.getCustomerlist = async (req, res) => {
 
    
     const customerRef = user.customerRef; 
-    const customerEntries = await customerEntry.find({ customerRef });
+    const customerEntries = await customerEntry.find({ customerRef,__v:0 });
 
     if (!customerEntries || customerEntries.length === 0) {
       return res.status(404).json({ error: true, message: 'No customer entries found for this customer' ,data:Array()});
@@ -311,7 +197,7 @@ exports.getBookinglist = async (req, res) => {
     }
 
     const customerRef = user.customerRef; 
-    const bookingEntries = await booking.find({ customerRef });
+    const bookingEntries = await booking.find({ customerRef,__v:0});
 
     if (!bookingEntries || bookingEntries.length === 0) {
       return res.status(404).json({ error: true, message: 'No customer entries found for this customer', data: [] });

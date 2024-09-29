@@ -23,12 +23,6 @@ const registraion = new mongoose.Schema({
   resetPasswordOTPExpires: Date,
  Jwttoken:String,
  customerRef:String,
- crewpassword:String,
- crewemail:String,
- deleted:{
-  type:Boolean,
-  default:false 
- },
  otp: {
   type: String
 }

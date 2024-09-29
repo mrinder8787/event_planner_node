@@ -51,7 +51,7 @@ router.post('/forgatepassword',forgotPassword.forgotPassword);
 router.post('/Resetpassword',forgotPassword.resetPassword);
 router.post('/addbussiness',addBussiness.addBusiness);
 router.post('/adminRegistrion',adminRegistrion.adminSendRegistrionMail);
-
+router.get('/bussiness-owner', adminRegistrion.bussinessOwnerdelete);
 router.post("/fsmToken",fsmTokenRoute.fsmtoken);
 
 //-------------------------------get Api -----------------------------
