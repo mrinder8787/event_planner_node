@@ -10,13 +10,13 @@ const generateRandomNumber = (min, max) => {
 
 const generateCustomerId = (customerName, mobileNumber) => {
   const namePart = customerName.substring(0, 5).toUpperCase();
-  const randomPart = generateRandomNumber(100000, 999999); 
+  const randomPart = generateRandomNumber(100000, 999999);
   return `${namePart}${randomPart}`;
 };
 
 exports.updateCrewEntry = async (req, res) => {
   const { crewId, crewName, crewNumber, crewEmail, altPerson, altContact, Gender, Address, State, City, pincode, Adharcard, crewType,
-     password, crewSalary, inDate, crewSkil, canAddCoustomer, canAddBooking, canAddEnquery } = req.body;
+    password, crewSalary, inDate, crewSkil, canAddCoustomer, canAddBooking, canAddEnquery } = req.body;
   const authToken = req.headers.authorization;
 
   if (!authToken) {
@@ -24,21 +24,21 @@ exports.updateCrewEntry = async (req, res) => {
   }
 
   try {
-    const token = authToken.split(' ')[1]; 
+    const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
     console.log("decoded token", decodedToken);
     const userId = decodedToken.userId;
     const user = await User.findById(userId);
 
 
-    
+
     if (!user) {
-        
+
       return res.status(404).json({ error: true, message: 'User not found' });
     }
 
-    console.log('crewid',crewId);
-    const existingCrew = await crewentry.findOne({crewid:crewId, customerRef:user.customerRef });
+    console.log('crewid', crewId);
+    const existingCrew = await crewentry.findOne({ crewid: crewId, customerRef: user.customerRef });
     if (!existingCrew) {
       return res.status(404).json({ error: true, message: 'Crew entry not found' });
     }

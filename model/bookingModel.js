@@ -43,7 +43,7 @@ const bookingShecma = new mongoose.Schema({
    },
    status:{
     type:String,
-    default:"Panding" 
+    default:"Pending" 
    },
    address:{
     type:String,
@@ -57,6 +57,10 @@ const bookingShecma = new mongoose.Schema({
     type:String,
     required:true
    },
+   bookingEvent:{
+    type:[String],
+    required:true,
+  },
 });
 
 module.exports = mongoose.model('Booking', bookingShecma);

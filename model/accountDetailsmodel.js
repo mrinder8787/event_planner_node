@@ -1,40 +1,32 @@
 const mongoose = require('mongoose');
 
-const enquiryShecma = new mongoose.Schema({
-   Name:{
+const accountDetailsShecma = new mongoose.Schema({
+   accountHolderName:{
     type:String,
     requerd:true,
    },
-   Number:{
+   accountNumber:{
     type:String,
     requerd:true,
    },
-   Email:{
+   ifscCode:{
     type:String,
     requerd:true,
    },
-   altContact:{
+   branchName:{
     type:String,
     requerd:true,
    },
-   fullAddress:{
+   bankName:{
     type:String,
     requerd:true,
    },
+  
   customerRef:{
     type:String,
     required: true,
   },
-  enquirygId:{
-    type:String
-  },
-  crewId:{
-    type:String,
-  },
-  deleted:{
-    type:Boolean,
-    default:false 
-   }
+ 
 });
 
-module.exports = mongoose.model('Enquiry', enquiryShecma);
+module.exports = mongoose.model('AccountDetails', accountDetailsShecma);

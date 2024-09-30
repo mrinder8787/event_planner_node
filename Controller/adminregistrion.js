@@ -135,24 +135,10 @@ exports.registraionApi = async (req, res) => {
             
         
     } catch (error) {
-        if (error.name === 'ValidationError') {
-            const errorMessage = Object.values(error.errors)
-                .map(error => error.message)
-                .join(', ');
-
-            console.log('Validation Error:', errorMessage);
-
-            return res.status(400).json({
-                error: true,
-                message: errorMessage,
-            });
-        } else {
-            console.log('Error:', error);
-            return res.status(400).json({
-                error: true,
-                message: 'Enter valid fields!',
-            });
-        }
+      return res.status(400).json({
+        error: true,
+        message: error.message,
+    });
     }
 };
 

@@ -20,18 +20,16 @@ const addBusiness = (req, res) => {
         console.error('No file selected!');
         return res.status(400).json({ message: 'No file selected!' });
       } else {
-       
+
         checkFileSize(req, res, () => {
           console.log('Uploaded file:', req.file);
 
           const { name, contactNumber, state, city, address, maxBidAmount } = req.body;
-
-    
           if (!name || !address) {
             return res.status(400).json({ error: 'BussinessName and fullAdress are required.' });
           }
 
-         
+
           const newBusiness = new Business({
             BussinessName: name,
             contactNumber: contactNumber,
@@ -40,14 +38,14 @@ const addBusiness = (req, res) => {
             fullAdress: address,
             maxBidAmount: maxBidAmount,
             imageUrl: req.file.path,
-            customerRef:decodedToken.customerRef
+            customerRef: decodedToken.customerRef
           });
 
           newBusiness.save()
             .then(business => res.json({
-              error:false,
-              message:"Bussiness Add Successfully !",
-              data:[business]
+              error: false,
+              message: "Bussiness Add Successfully !",
+              data: [business]
             }))
             .catch(err => res.status(500).json({ error: err.message }));
         });

@@ -43,7 +43,7 @@ exports.booking = async (req, res) => {
           if (crewFound.canAddBooking === false) {
             return res.status(403).json({ error: true, message: 'Permission denied: Crew member cannot add booking' });
           } else {
-              const { Name, Number, Email, altContact,bookingitem,address,state,city } = req.body;
+              const { Name, Number, Email, altContact,bookingitem,address,state,city ,bookingEvent} = req.body;
   
             if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
               return res.status(400).json({ error: true, message: 'All fields are required' });
@@ -63,6 +63,7 @@ exports.booking = async (req, res) => {
               crewId: decodedToken.crewid,
               crewname: crewFound.crewName,
               bookingitem,
+              bookingEvent
             });
   
             await newBooking.save();
@@ -84,6 +85,7 @@ exports.booking = async (req, res) => {
             bookingId:bookingId,
             customerId:decodedToken.userid,
             bookingitem,
+            bookingEvent,
           });
       
           await newBooking.save();
@@ -99,7 +101,7 @@ exports.booking = async (req, res) => {
   
 //------------------------------------Admin (Owener) Add Booking ---------------------------------
 
-      const { Name, Number, Email, altContact,bookingitem,address,state,city } = req.body;
+      const { Name, Number, Email, altContact,bookingitem,address,state,city,bookingEvent } = req.body;
   
       if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
         return res.status(400).json({ error: true, message: 'All fields are required' });
@@ -117,10 +119,11 @@ exports.booking = async (req, res) => {
         customerRef: user.customerRef,
         bookingId,
         bookingitem,
+        bookingEvent,
       });
   
       await newBooking.save();
-      return res.status(201).json({ message: 'Admin Booking created successfully', data:newBooking });
+      return res.status(200).json({ message: 'Admin Booking created successfully', data:newBooking });
   
     } catch (error) {
       console.log('catch error', error);
@@ -128,3 +131,120 @@ exports.booking = async (req, res) => {
     }
   };
   
+
+
+
+
+  //-----------------------------------------------Booking Update --------------------------------------
+
+  exports.bookingUpdate = async (req, res) => {
+    const authToken = req.headers.authorization;
+    const { id } = req.params; 
+    const updateData = req.body; 
+  
+    if (!authToken) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+    }
+  
+    try {
+    
+      const token = authToken.split(' ')[1];
+      const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+  
+      if (!decodedToken) {
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+  
+      if (!decodedToken.customerRef || !decodedToken.userId) {
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+  
+  
+      const user = await User.findOne({ customerRef: decodedToken.customerRef });
+      if (user && user.Jwttoken !== token) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+  
+    
+      const updatedBooking = await booking.findByIdAndUpdate(
+        id,                    
+        updateData,    
+        { new: true, runValidators: true } 
+      );
+  
+      if (!updatedBooking) {
+        return res.status(404).json({ error: true, message: 'Booking not found' });
+      }
+  
+      return res.status(200).json({
+        error: false,
+        message: 'Booking updated successfully',
+        data: updatedBooking
+      });
+  
+    } catch (error) {
+      return res.status(500).json({
+        error: true,
+        message: error.message
+      });
+    }
+  };
+
+//------------------------------------------------Only Status Update -------------------------------------------
+
+
+exports.bookingStatusUpdate = async (req, res) => {
+  const authToken = req.headers.authorization;
+  const { id } = req.params; 
+  const { status } = req.body; 
+
+  if (!authToken) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+  }
+
+  try {
+      const token = authToken.split(' ')[1];
+      const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+
+      if (!decodedToken) {
+          return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+
+      if (!decodedToken.customerRef || !decodedToken.userId) {
+          return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+
+      const user = await User.findOne({ customerRef: decodedToken.customerRef });
+      if (user && user.Jwttoken !== token) {
+          return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+
+     
+      if (!status) {
+          return res.status(400).json({ error: true, message: 'Status is required to update' });
+      }
+
+      
+      const updatedBooking = await booking.findByIdAndUpdate(
+          id,                    
+          { status },   
+          { new: true, runValidators: true } 
+      );
+
+      if (!updatedBooking) {
+          return res.status(404).json({ error: true, message: 'Booking not found' });
+      }
+
+      return res.status(200).json({
+          error: false,
+          message: 'Booking status updated successfully',
+          data: updatedBooking
+      });
+
+  } catch (error) {
+      return res.status(500).json({
+          error: true,
+          message: error.message
+      });
+  }
+};
