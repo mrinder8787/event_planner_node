@@ -14,20 +14,19 @@ exports.booking = async (req, res) => {
     try {
       const token = authToken.split(' ')[1];
       const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
-      console.log('decoded token', decodedToken);
-  
+
       if (!decodedToken) {
-        console.error("Failed to decode token:", token);
+    
         return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
       }
       
       if (!decodedToken.customerRef) {
-        console.error("Missing customerRef in token:", decodedToken);
+      
         return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
       }
       
       if (!decodedToken.userId) {
-        console.error("Missing userId in token:", decodedToken);
+      
         return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
       }
       const userId = decodedToken.userId;
@@ -43,7 +42,7 @@ exports.booking = async (req, res) => {
           if (crewFound.canAddBooking === false) {
             return res.status(403).json({ error: true, message: 'Permission denied: Crew member cannot add booking' });
           } else {
-              const { Name, Number, Email, altContact,bookingitem,address,state,city ,bookingEvent} = req.body;
+              const { Name, Number, Email, altContact,bookingitem,address,state,city ,bookingEvent,inDate,bookingAmount,advanceAmount} = req.body;
   
             if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
               return res.status(400).json({ error: true, message: 'All fields are required' });
@@ -63,7 +62,10 @@ exports.booking = async (req, res) => {
               crewId: decodedToken.crewid,
               crewname: crewFound.crewName,
               bookingitem,
-              bookingEvent
+              bookingEvent,
+              inDate,
+              bookingAmount,
+              advanceAmount,
             });
   
             await newBooking.save();
@@ -86,6 +88,9 @@ exports.booking = async (req, res) => {
             customerId:decodedToken.userid,
             bookingitem,
             bookingEvent,
+            inDate,
+            bookingAmount,
+            advanceAmount,
           });
       
           await newBooking.save();
@@ -101,7 +106,7 @@ exports.booking = async (req, res) => {
   
 //------------------------------------Admin (Owener) Add Booking ---------------------------------
 
-      const { Name, Number, Email, altContact,bookingitem,address,state,city,bookingEvent } = req.body;
+      const { Name, Number, Email, altContact,bookingitem,address,state,city,bookingEvent,inDate,bookingAmount,advanceAmount } = req.body;
   
       if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
         return res.status(400).json({ error: true, message: 'All fields are required' });
@@ -120,6 +125,9 @@ exports.booking = async (req, res) => {
         bookingId,
         bookingitem,
         bookingEvent,
+        inDate,
+        bookingAmount,
+        advanceAmount,
       });
   
       await newBooking.save();

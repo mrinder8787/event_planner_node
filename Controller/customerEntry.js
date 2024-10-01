@@ -19,7 +19,7 @@ const generateCustomerId = (customerName, mobileNumber) => {
 
 
 exports.customerentry = async (req, res) => {
-  const { customerName, customerNumber, customerEmail, altContact, Address, State, City, pincode, reamark, Dateofbirth, publishDate, crewId,
+  const { customerName, customerNumber, customerEmail, altContact, Address, State, City, pincode, reamark, publishDate, crewId,
     Whosenameby,
   } = req.body;
   const authToken = req.headers.authorization;
@@ -32,20 +32,27 @@ exports.customerentry = async (req, res) => {
   try {
     const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
-    if (decodedToken.userid === null || decodedToken.customerRef === null) {
+    
+    if (!decodedToken) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
-    console.log('decode token', decodedToken);
 
-    const userId = decodedToken.userId;
-    const user = await User.findById(userId);
+    if (!decodedToken.customerRef || !decodedToken.userId) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+    const user = await User.findOne({ customerRef: decodedToken.customerRef });
+    const crewCheck =await crewentry.findOne({ customerRef: decodedToken.customerRef,crewid:decodedToken.crewid});
+    if (user.Jwttoken || crewCheck.jwttoken) {
+      const userTokenMatch = token === user.Jwttoken || crewCheck.jwttoken;
+      if (!userTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    const crew = decodedToken.crewid;
+  
 
-    const userFound = await userRegistrion.findOne({ userid: decodedToken.userid });
 
-    //  console.log("costomer find",userFound);
-
-
-    if (!user) {
+    if (crew) {
       const crewfound = await crewentry.findOne({ crewid: decodedToken.crewid });
       if (crewfound) {
         if (crewfound.canAddCoustomer === false) {
@@ -82,51 +89,52 @@ exports.customerentry = async (req, res) => {
         }
         //----------------------------------------User Registrion type ---------------------------------
 
-      } else if (userFound) {
-        const { customerRef } = req.body;
-        const user = await User.findOne({ customerRef: customerRef });
-        const userFoundbyCust = await customerEntry.findOne({
-          $and: [
-            { customerRef: customerRef },
-            { customerId: decodedToken.userid }
-          ]
-        });
-        console.log('user found', userFoundbyCust);
-        if (userFoundbyCust) {
-          return res.status(400).json({
-            error: false,
-            message: 'User Alredy add This Bussinse',
-            data: [],
-          });
+      } 
+      // else if (userFound) {
+      //   const { customerRef } = req.body;
+      //   const user = await User.findOne({ customerRef: customerRef });
+      //   const userFoundbyCust = await customerEntry.findOne({
+      //     $and: [
+      //       { customerRef: customerRef },
+      //       { customerId: decodedToken.userid }
+      //     ]
+      //   });
+      //   console.log('user found', userFoundbyCust);
+      //   if (userFoundbyCust) {
+      //     return res.status(400).json({
+      //       error: false,
+      //       message: 'User Alredy add This Bussinse',
+      //       data: [],
+      //     });
 
-        }
-        console.log("userdataga", user);
-        const newcustomerentry = new customerEntry({
-          userId: user._id,
-          customerId: decodedToken.userid,
-          customerName: customerName,
-          customerNumber: customerNumber,
-          customerEmail: userFound.email,
-          altContact: altContact,
-          Address: Address,
-          State: State,
-          City: City,
-          pincode: pincode,
-          Adharcard: req.body.Adharcard,
-          reamark: reamark,
-          customerRef: customerRef,
-          publishDate: publishDate,
-        });
+      //   }
+      //   console.log("userdataga", user);
+      //   const newcustomerentry = new customerEntry({
+      //     userId: user._id,
+      //     customerId: decodedToken.userid,
+      //     customerName: customerName,
+      //     customerNumber: customerNumber,
+      //     customerEmail: userFound.email,
+      //     altContact: altContact,
+      //     Address: Address,
+      //     State: State,
+      //     City: City,
+      //     pincode: pincode,
+      //     Adharcard: req.body.Adharcard,
+      //     reamark: reamark,
+      //     customerRef: customerRef,
+      //     publishDate: publishDate,
+      //   });
 
-        const savedcustomerentry = await newcustomerentry.save();
-        return res.status(200).json({
-          error: false,
-          message: 'User Entry Saved Successfully!',
-          data: savedcustomerentry,
-        });
+      //   const savedcustomerentry = await newcustomerentry.save();
+      //   return res.status(200).json({
+      //     error: false,
+      //     message: 'User Entry Saved Successfully!',
+      //     data: savedcustomerentry,
+      //   });
 
-      }
-      return res.status(404).json({ error: true, message: 'User not found' });
+      // }
+      // return res.status(404).json({ error: true, message: 'User not found' });
     }
 
     //---------------------Bussiness Owener Add Customere-----------------------------
@@ -134,7 +142,6 @@ exports.customerentry = async (req, res) => {
     const customerId = generateCustomerId(customerName, customerNumber);
     console.log("user dataga");
     const newcustomerentry = new customerEntry({
-      userId: user._id,
       customerId: customerId,
       customerName: customerName,
       customerNumber: customerNumber,
@@ -158,10 +165,6 @@ exports.customerentry = async (req, res) => {
       data: savedcustomerentry,
     });
   } catch (error) {
-    console.error('Error saving customer entry:', error.message);
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(400).json({ error: true, message: 'Please login Unauthorized' });
-    }
     return res.status(400).json({ error: true, message: error.message, data: Array() });
   }
 };

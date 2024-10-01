@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const fsmTokenModel = require("../model/fsmTokensave");
 const User = require('../model/registrion');
+const crewData = require('../model/crewentry');
 
 exports.fsmtoken = async (req, res) => {
   const authToken = req.headers.authorization;
@@ -33,9 +34,9 @@ exports.fsmtoken = async (req, res) => {
       return res.status(401).json({ error: true, message: 'Fsm Token is Requerd' });
     }
     const user = await User.findOne({ customerRef: decodedToken.customerRef });
-
-    if (user.Jwttoken) {
-      const userTokenMatch = token === user.Jwttoken;
+    const crew =await crewData.findOne({ customerRef: decodedToken.customerRef,crewid:decodedToken.crewid});
+    if (user.Jwttoken || crew.jwttoken) {
+      const userTokenMatch = token === user.Jwttoken || crew.jwttoken;
       if (!userTokenMatch) {
         return res.status(404).json({ error: true, message: 'User Login Another Device' });
       }
@@ -43,20 +44,16 @@ exports.fsmtoken = async (req, res) => {
     const fsmcheck = await fsmTokenModel.findOne({ CustomerRef: decodedToken.customerRef });
 
     if (fsmcheck) {
-
       fsmcheck.fsmToken = fsmToken;
-
       await fsmcheck.save();
-
       return res.status(200).json({ error: false, message: 'FSM Token Updated Successfully!', data: [fsmcheck] });
-    } else {
+    }  
+    if(!fsmcheck){
       const fsmTokensave = fsmTokenModel({
         fsmToken,
         CustomerRef: decodedToken.customerRef
       });
-
       await fsmTokensave.save();
-
       return res.status(200).json({ error: false, message: 'FSM Token Save Succeessfully!', data: [fsmTokensave] });
     }
 

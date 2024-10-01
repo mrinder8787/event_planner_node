@@ -26,16 +26,26 @@ exports.updateCrewEntry = async (req, res) => {
   try {
     const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
-    console.log("decoded token", decodedToken);
-    const userId = decodedToken.userId;
-    const user = await User.findById(userId);
+    if (!decodedToken) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+  }
 
+  if (!decodedToken.customerRef) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+  }
 
+  if (!decodedToken.userId) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+  }
 
-    if (!user) {
-
-      return res.status(404).json({ error: true, message: 'User not found' });
-    }
+  // Verify if the user JWT token matches
+  const user = await User.findOne({ customerRef: decodedToken.customerRef });
+  if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+          return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+  }
 
     console.log('crewid', crewId);
     const existingCrew = await crewentry.findOne({ crewid: crewId, customerRef: user.customerRef });
@@ -43,26 +53,6 @@ exports.updateCrewEntry = async (req, res) => {
       return res.status(404).json({ error: true, message: 'Crew entry not found' });
     }
 
-    if (crewNumber) {
-      const existingCrewNumber = await crewentry.findOne({ crewNumber, customerRef: user.customerRef, _id: { $ne: existingCrew._id } });
-      if (existingCrewNumber) {
-        return res.status(400).json({ error: true, message: 'Crew number already exists' });
-      }
-    }
-
-    if (crewEmail) {
-      const existingCrewEmail = await crewentry.findOne({ crewEmail, customerRef: user.customerRef, _id: { $ne: existingCrew._id } });
-      if (existingCrewEmail) {
-        return res.status(400).json({ error: true, message: 'Crew email already exists' });
-      }
-    }
-
-    if (Adharcard) {
-      const existingAdharcard = await crewentry.findOne({ Adharcard, customerRef: user.customerRef, _id: { $ne: existingCrew._id } });
-      if (existingAdharcard) {
-        return res.status(400).json({ error: true, message: 'Adharcard number already exists' });
-      }
-    }
 
     const updates = {
       ...(crewName && { crewName }),

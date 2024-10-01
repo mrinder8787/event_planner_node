@@ -104,7 +104,7 @@ exports.bookingStatusCount = async (req, res) => {
         //-------------------------- Status Count Queries --------------------------
         // Count for each status
         const totalBookingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef,__v:0 });
-        const pendingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Panding',__v:0 });
+        const pendingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Pending',__v:0 });
         const successCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Success',__v:0 });
         const cancelCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Cancel',__v:0 });
         const deliverCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Deliver',__v:0 });

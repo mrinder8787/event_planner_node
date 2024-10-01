@@ -9,6 +9,10 @@ const crewentry = new mongoose.Schema({
     type:String,
     requerd:true,
    },
+   dateofBirth:{
+    type:String,
+    requerd:true,
+   },
    crewEmail:{
     type:String,
     requerd:true,
@@ -87,10 +91,7 @@ const crewentry = new mongoose.Schema({
   resetPasswordOTP: String,
   resetPasswordOTPExpires: Date,
   jwttoken:String,
-  deleted:{
-    type:Boolean,
-    default:false 
-   }
+
 });
 
 module.exports = mongoose.model('Crewentrys', crewentry);

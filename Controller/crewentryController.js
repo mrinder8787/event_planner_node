@@ -16,9 +16,10 @@ const generateCustomerId = (customerName, mobileNumber) => {
 };
 
 exports.crewentry = async (req, res) => {
-  const { crewName, crewNumber, crewEmail, altPerson, altContact, Gender, Address, State, City, pincode,
-    Adharcard, crewType, password, crewSalary, inDate, crewSkil, canAddCoustomer, canAddBooking, canAddEnquery } = req.body;
   const authToken = req.headers.authorization;
+  const { crewName, crewNumber, crewEmail, altPerson, altContact, Gender, Address, State, City, pincode,
+    Adharcard, crewType, password, crewSalary, inDate, crewSkil, canAddCoustomer, canAddBooking, canAddEnquery, dateofBirth } = req.body;
+
 
   if (!authToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized' });
@@ -27,15 +28,27 @@ exports.crewentry = async (req, res) => {
   try {
     const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
-    console.log("decodecrew ", decodedToken);
-    const userId = decodedToken.userId;
 
+    if (!decodedToken) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+  }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: true, message: 'User not found' });
-    }
+  if (!decodedToken.customerRef) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+  }
 
+  if (!decodedToken.userId) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+  }
+
+  // Verify if the user JWT token matches
+  const user = await User.findOne({ customerRef: decodedToken.customerRef });
+  if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+          return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+  }
     const existingCrewNumber = await crewentry.findOne({ crewNumber, customerRef: user.customerRef });
     if (existingCrewNumber) {
       return res.status(400).json({ error: true, message: 'Crew number already exists' });
@@ -55,25 +68,25 @@ exports.crewentry = async (req, res) => {
     const crewId = generateCustomerId(crewName, crewNumber);
 
     const newCrewEntry = new crewentry({
-      userId: user._id,
       crewid: crewId,
-      crewName: req.body.crewName,
-      crewNumber: req.body.crewNumber,
-      crewEmail: req.body.crewEmail,
-      altPerson: req.body.altPerson,
-      altContact: req.body.altContact,
-      Gender: req.body.Gender,
-      Address: req.body.Address,
-      State: req.body.State,
-      City: req.body.City,
-      pincode: req.body.pincode,
-      Adharcard: req.body.Adharcard,
-      crewType: req.body.crewType,
+      crewName,
+      crewNumber,
+      crewEmail,
+      altPerson,
+      altContact,
+      Gender,
+      Address,
+      State,
+      City,
+      pincode,
+      Adharcard,
+      crewType,
       crewpassword: hasPassword,
-      crewSalary: req.body.crewSalary,
-      inDate: req.body.inDate,
-      crewSkil: req.body.crewSkil,
+      crewSalary,
+      inDate,
+      crewSkil,
       customerRef: user.customerRef,
+      dateofBirth,
       canAddCoustomer,
       canAddBooking,
       canAddEnquery,
@@ -89,50 +102,48 @@ exports.crewentry = async (req, res) => {
     });
   } catch (error) {
     console.error('Error saving crew entry:', error.message);
-    if (error.message === 'invalid signature') {
-      return res.status(400).json({ error: true, message: 'Please login Unauthorized' });
-    }
-    return res.status(400).json({ error: true, message: 'Error saving crew entry' });
+
+    return res.status(400).json({ error: true, message: error.message });
   }
 };
 
 
 
-exports.getCrewNamelist=async(req,res)=>{
+exports.getCrewNamelist = async (req, res) => {
   const authToken = req.headers.authorization;
   if (!authToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
-}
+  }
 
-try {
+  try {
     const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
 
     if (!decodedToken) {
-        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
 
     if (!decodedToken.customerRef || !decodedToken.userId) {
-        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
 
     const user = await User.findOne({ customerRef: decodedToken.customerRef });
     if (user && user.Jwttoken !== token) {
-        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      return res.status(404).json({ error: true, message: 'User Login Another Device' });
     }
 
     const crewData = await crewentry.find({ customerRef: decodedToken.customerRef, __v: 0 })
-                                         .select('crewName crewid _id');
+      .select('crewName crewid _id');
     return res.status(200).json({
-      error:false,
-      message :"Crew list Fatch",
-      data:crewData
+      error: false,
+      message: "Crew list Fatch",
+      data: crewData
     })
 
-  }catch(error){
+  } catch (error) {
     return res.status(500).json({
-      error:true,
-      message:error.message
+      error: true,
+      message: error.message
     })
   }
 

@@ -57,6 +57,18 @@ const bookingShecma = new mongoose.Schema({
     type:String,
     required:true
    },
+   inDate:{
+    type:String,
+    required:true
+   },
+   bookingAmount:{
+    type:String,
+    required:true
+   },
+   advanceAmount:{
+    type:String,
+    required:true
+   },
    bookingEvent:{
     type:[String],
     required:true,
