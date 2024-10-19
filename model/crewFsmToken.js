@@ -9,7 +9,11 @@ const fsmtokenShecma = new mongoose.Schema({
     type:String,
     requerd:true,
    },
+   CrewId:{
+    type:String,
+    requerd:true,
+   },
  
 });
 
-module.exports = mongoose.model('OwnerFsmToken', fsmtokenShecma);
+module.exports = mongoose.model('CrewFsmToken', fsmtokenShecma);

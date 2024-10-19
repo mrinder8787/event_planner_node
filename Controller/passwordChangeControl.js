@@ -18,7 +18,7 @@ exports.passwordchange = async (req, res) => {
 
     const userFound = await registrionapi.findOne({ customerRef: decodedToken.customerRef, _id: decodedToken.userId });
     console.log('decode token', decodedToken);
-    console.log('decode token', userFound);
+    console.log('user Found', userFound);
     if (!userFound) {
       const CrewFound = await crewentry.findOne({ crewid: decodedToken.crewid });
       if (!CrewFound) {

@@ -29,7 +29,7 @@ exports.paymentget=async(req,res)=>{
           const payment = await paymentModel.find({ customerRef: decodedToken.customerRef });
 
           if (payment && payment.length > 0) {
-              // Calculate total amount by summing up the 'amount' field
+             
               const totalAmount = payment.reduce((acc, curr) => acc + Number(curr.amount), 0);
           
               return res.status(200).json({

@@ -10,7 +10,9 @@ require('dotenv').config();
 exports.loginApi = async (req, res) => {
   const { email, password } = req.body;
   try {
+   
     const existingUser = await registrionapi.findOne({email});
+    console.log("s",existingUser);
     const crewexistingUser = await crewentry.findOne({crewEmail:email});
     if (existingUser) {
       console.log("login Successfully",existingUser)
@@ -65,6 +67,11 @@ exports.loginApi = async (req, res) => {
         data: Array(),
       });
     }
+  }else{
+    return res.status(400).json({
+      error: true,
+      message: "User Not Found",
+    });
   }
   } catch (error) {
     if (error.name === 'ValidationError') {

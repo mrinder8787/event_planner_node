@@ -9,7 +9,6 @@ const registraion = new mongoose.Schema({
       lowercase: true,
       validate: {
         validator: function (value) {
-          // Regular expression for email validation
           return /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(value);
         },
         message: props => `${props.value} is not a valid email address!`,
@@ -28,4 +27,4 @@ const registraion = new mongoose.Schema({
 }
 });
 
-module.exports = mongoose.model('registrions', registraion);
+module.exports = mongoose.model('OwnerRegistrions', registraion);

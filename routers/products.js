@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+
+
+
 const postController = require('../Controller/firstapicontroler');
 const loginController = require('../Controller/loginController');
 const customerEntryController=require('../Controller/customerEntry');
@@ -17,13 +20,16 @@ const paymentGet = require("../Controller/paymentgetController");
 const payment = require("../Controller/paymentController");
 const allItemCount =require("../Controller/allitemCount");
 const accountDetails =require('../Controller/accountDetailsController');
+const leaveRequestCrew = require('../Controller/leaveCrewController');
+
+const CalculateProfitloss= require("../Controller/profitLoss");
 
 
 //------------------------------------Start Route Post--------------------------------------------
 
 router.post('/crewUpdate',crewUpdateController.updateCrewEntry);
 router.post('/paymentAdd',payment.payment),
-router.post('/registrion',adminRegistrion.registraionApi);
+router.post('/Owner-registrion',adminRegistrion.registraionApi);
 router.post('/crewentry',crewEntryController.crewentry);
 router.post('/login',loginController.loginApi);
 router.post('/customerEntry',customerEntryController.customerentry);
@@ -34,9 +40,13 @@ router.post('/passwordchange',passChange.passwordchange);
 router.post('/forgatepassword',forgotPassword.forgotPassword);
 router.post('/Resetpassword',forgotPassword.resetPassword);
 router.post('/addbussiness',addBussiness.addBusiness);
-router.post('/adminRegistrion',adminRegistrion.adminSendRegistrionMail);
-router.post("/fsmToken",fsmTokenRoute.fsmtoken);
-router.post("/accountDetails-save",accountDetails.accountDetails);
+router.post('/OwnerSend-OTP',adminRegistrion.adminSendRegistrionMail);
+router.post("/Owner-fsmToken",fsmTokenRoute.fsmtoken);
+router.post("/Owner-accountDetails-save",accountDetails.accountDetails);
+router.post('/Crewleave-add',leaveRequestCrew.leaveRequestCrew);
+router.post('/leaveRequest-Status',leaveRequestCrew.leaveStatusUpadte);
+
+router.post('/profit-loss',CalculateProfitloss.profitLoss);
 
 //--------------------------------------Put Api Route0---------------------------
 
@@ -53,6 +63,7 @@ router.get("/paymentGet",paymentGet.paymentget);
 router.get("/getenquery-list",postController.getEnquerylist);
 router.get('/getBooking-status',allItemCount.bookingStatusCount);
 router.get("/crewNamelist",crewEntryController.getCrewNamelist);
+router.get('/getleave-request',leaveRequestCrew.getAllrequest);
 
 
 module.exports = router;
