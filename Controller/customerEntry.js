@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../model/registrion');
 const crewentry = require('../model/crewentry');
 const userRegistrion = require('../model/userregistrion');
-
 require('dotenv').config();
 
 

@@ -47,7 +47,6 @@ exports.booking = async (req, res) => {
           if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
             return res.status(400).json({ error: true, message: 'All fields are required' });
           }
-
           const bookingId = `BOOK-${Date.now()}`;
           const newBooking = new booking({
             Name,

@@ -54,7 +54,7 @@ router.put("/bookingsUpadte/:id",bookingController.bookingUpdate);
 router.put("/bookingStatusUpadte/:id",bookingController.bookingStatusUpdate);
 //-------------------------------get Api -----------------------------
 router.get("/allItem-Count",allItemCount.allItemCount);
-router.get('/bussiness-owner', adminRegistrion.bussinessOwnerdelete);
+router.get('/bussiness-ownerDelete', adminRegistrion.bussinessOwnerdelete);
 router.get('/bookinglist',postController.getBookinglist);
 router.get('/customerlist',postController.getCustomerlist);
 router.get('/crewlist',postController.getCrewByCustomerRef);

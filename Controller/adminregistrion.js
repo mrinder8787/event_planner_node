@@ -241,20 +241,29 @@ exports.bussinessOwnerdelete = async (req, res) => {
     const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
 
+
     if (!decodedToken) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
+    const owner = await registrionapi.findOne({_id:decodedToken.userId,__v:0});
+    if(owner){
+      await registrionapi.findByIdAndUpdate(
+        decodedToken.userId,
+        { __v: 1 },
+        { new: true }
+      );
+  
+      return res.status(200).json({
+        error: false,
+        message: "Deleted successfully",
+      });
+    }
 
-    await registrionapi.findByIdAndUpdate(
-      decodedToken.userId,
-      { __v: 1 },
-      { new: true }
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Deleted successfully",
+    return res.status(400).json({
+      error:true,
+      message:"Your Account Already Delete"
     });
+   
   } catch (error) {
     return res.status(500).json({
       error: true,

@@ -31,24 +31,23 @@ exports.crewentry = async (req, res) => {
 
     if (!decodedToken) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-  }
+    }
 
-  if (!decodedToken.customerRef) {
+    if (!decodedToken.customerRef) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-  }
+    }
 
-  if (!decodedToken.userId) {
+    if (!decodedToken.userId) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-  }
+    }
 
-  // Verify if the user JWT token matches
-  const user = await User.findOne({ customerRef: decodedToken.customerRef });
-  if (user.Jwttoken) {
+    const user = await User.findOne({ customerRef: decodedToken.customerRef });
+    if (user.Jwttoken) {
       const userTokenMatch = token === user.Jwttoken;
       if (!userTokenMatch) {
-          return res.status(404).json({ error: true, message: 'User Login Another Device' });
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
       }
-  }
+    }
     const existingCrewNumber = await crewentry.findOne({ crewNumber, customerRef: user.customerRef });
     if (existingCrewNumber) {
       return res.status(400).json({ error: true, message: 'Crew number already exists' });

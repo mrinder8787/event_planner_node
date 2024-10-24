@@ -74,7 +74,6 @@ exports.getCrewByCustomerRef = async (req, res) => {
 
 exports.getCustomerlist = async (req, res) => {
   const authToken = req.headers.authorization;
-
   if (!authToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
   }
@@ -106,18 +105,15 @@ exports.getCustomerlist = async (req, res) => {
       }
     }
 
-    const foundUser = await registrionapi.findOne({ customerRef: decodedToken.customerRef });
-
-    if (!foundUser) {
-      return res.status(404).json({ error: true, message: 'User not found in custom API model' });
-    }
-
 
     const customerRef = user.customerRef;
-    const customerEntries = await customerEntry.find({ customerRef, __v: 0 });
+    const customerEntries = await customerEntry.find({customerRef, __v: 0 });
 
     if (!customerEntries || customerEntries.length === 0) {
-      return res.status(404).json({ error: true, message: 'No customer entries found for this customer', data: Array() });
+      return res.status(404).json({
+         error: true,
+          message: 'No customer entries found',
+           data: Array() });
     }
 
     return res.status(200).json({
@@ -125,6 +121,7 @@ exports.getCustomerlist = async (req, res) => {
       message: 'Customer entries retrieved successfully',
       data: customerEntries,
     });
+    
   } catch (error) {
     console.error('Error fetching customer entries:', error.message);
     if (error.name === 'JsonWebTokenError') {
