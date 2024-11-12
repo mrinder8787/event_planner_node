@@ -90,8 +90,8 @@ const crewentry = new mongoose.Schema({
   },
   resetPasswordOTP: String,
   resetPasswordOTPExpires: Date,
-  jwttoken:String,
+  Jwttoken:String,
 
-});
+},{ timestamps: true });
 
 module.exports = mongoose.model('Crewentrys', crewentry);

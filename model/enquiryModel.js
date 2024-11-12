@@ -31,10 +31,13 @@ const enquiryShecma = new mongoose.Schema({
   crewId:{
     type:String,
   },
+  crewName:{
+    type:String,
+  },
   deleted:{
     type:Boolean,
     default:false 
    }
-});
+},{ timestamps: true });
 
 module.exports = mongoose.model('Enquiry', enquiryShecma);

@@ -47,7 +47,7 @@ router.post('/Crewleave-add',leaveRequestCrew.leaveRequestCrew);
 router.post('/leaveRequest-Status',leaveRequestCrew.leaveStatusUpadte);
 
 router.post('/profit-loss',CalculateProfitloss.profitLoss);
-
+router.post("/getBookingPayment-Date",paymentGet.getAmountbyDate);
 //--------------------------------------Put Api Route0---------------------------
 
 router.put("/bookingsUpadte/:id",bookingController.bookingUpdate);
@@ -64,6 +64,8 @@ router.get("/getenquery-list",postController.getEnquerylist);
 router.get('/getBooking-status',allItemCount.bookingStatusCount);
 router.get("/crewNamelist",crewEntryController.getCrewNamelist);
 router.get('/getleave-request',leaveRequestCrew.getAllrequest);
+router.get("/getBooking-nameId",bookingController.getBookinglistName);
+router.get("/getBookingPayment/:bookingId",paymentGet.getAmountbyBookingId);
 
 
 module.exports = router;

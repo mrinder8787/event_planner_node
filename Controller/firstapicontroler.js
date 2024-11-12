@@ -1,8 +1,6 @@
 
 const registrionapi = require('../model/registrion');
 const crewentry = require('../model/crewentry');
-const jwttoken = require('../jwtToken/jwttoken');
-const bcrept = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../model/registrion');
 const booking = require('../model/bookingModel');
@@ -25,8 +23,7 @@ exports.getCrewByCustomerRef = async (req, res) => {
   }
 
   try {
-
-    const token = authToken.split(' ')[1]; // Assuming the token is in the format "Bearer <token>"
+    const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
     console.log('tokendecode', decodedToken);
 
@@ -62,9 +59,6 @@ exports.getCrewByCustomerRef = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching crew entries:', error.message);
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-    }
     return res.status(500).json({ error: true, message: error.message });
   }
 };
@@ -88,13 +82,26 @@ exports.getCustomerlist = async (req, res) => {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
     const user = await User.findOne({ customerRef: decodedToken.customerRef });
-    const foundOnlyUser = await onlyUser.findOne({ customerId: decodedToken.userid });
-
+    if (decodedToken.crewid) {
+      const crewToken = await crewentry.findOne({ crewid: decodedToken.crewid, customerRef: decodedToken.customerRef });
+      if (crewToken.Jwttoken) {
+        const crewTokenMatch = token === crewToken.Jwttoken;
+        if (!crewTokenMatch) {
+          return res.status(404).json({ error: true, message: 'User Login Another Device' });
+        }
+      }
+      const customerCrewEntries = await customerEntry.find({
+        customerRef: decodedToken.customerRef,
+        crewId: decodedToken.crewid,
+        __v: 0,
+      });
+      return res.status(200).json({
+        error: true, message: 'crew found Customer list',
+        data: customerCrewEntries
+      });
+    }
 
     if (!user) {
-      if (foundOnlyUser) {
-        return res.status(200).json({ error: true, message: 'User found', data: foundOnlyUser });
-      }
       return res.status(404).json({ error: true, message: 'User not found' });
     }
 
@@ -107,13 +114,14 @@ exports.getCustomerlist = async (req, res) => {
 
 
     const customerRef = user.customerRef;
-    const customerEntries = await customerEntry.find({customerRef, __v: 0 });
+    const customerEntries = await customerEntry.find({ customerRef, __v: 0 });
 
     if (!customerEntries || customerEntries.length === 0) {
       return res.status(404).json({
-         error: true,
-          message: 'No customer entries found',
-           data: Array() });
+        error: true,
+        message: 'No customer entries found',
+        data: Array()
+      });
     }
 
     return res.status(200).json({
@@ -121,7 +129,7 @@ exports.getCustomerlist = async (req, res) => {
       message: 'Customer entries retrieved successfully',
       data: customerEntries,
     });
-    
+
   } catch (error) {
     console.error('Error fetching customer entries:', error.message);
     if (error.name === 'JsonWebTokenError') {
@@ -169,7 +177,7 @@ exports.getBookinglist = async (req, res) => {
     // const userBookings = await booking.find({ customerId: decodedToken.userid });
 
     if (!user) {
-      const crewBookings = await booking.find({ crewId: decodedToken.crewid ,__v:0});
+      const crewBookings = await booking.find({ crewId: decodedToken.crewid, __v: 0 });
 
       if (!crewBookings || crewBookings.length === 0) {
         return res.status(200).json({
@@ -219,6 +227,11 @@ exports.getBookinglist = async (req, res) => {
 
 exports.enquiery = async (req, res) => {
   const authToken = req.headers.authorization;
+  const { Name, Number, Email, altContact, fullAddress } = req.body;
+  if (!Name || !Number || !Email || !altContact) {
+    return res.status(400).send('All fields are required');
+  }
+
   if (!authToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
   }
@@ -233,15 +246,56 @@ exports.enquiery = async (req, res) => {
     }
     const userId = decodedToken.userId;
     const user = await User.findById(userId);
+    const crewIdentiy = await crewentry.findOne({ crewid: decodedToken.crewid });
+    if (user?.Jwttoken || crewIdentiy?.Jwttoken) {
+      const userTokenMatch = token === user?.Jwttoken;
+      const crewTokenMatch = token === crewIdentiy?.Jwttoken;
+      console.log("chek crew ", crewIdentiy);
+      if (!userTokenMatch && !crewTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    const enquieryNumberCheck = await enquiery.findOne({ Number });
+    if (enquieryNumberCheck) {
+      console.log("enquiery Number Check already Exit", enquieryNumberCheck);
+      return res.status(404).json({
+        error: true,
+        message: "This mobile number already Exits"
+      });
+    }
+
+    if (decodedToken.crewid) {
+      if (crewIdentiy.canAddEnquery === false) {
+        return res.status(404).json({
+          error: true,
+          message: "Admin not permnision add enquery"
+        });
+      }
+      const enquirygId = `ENQUIR-${Date.now()}`;
+      const crewNewEnquiery = new enquiery({
+        Name,
+        Number,
+        Email,
+        altContact,
+        customerRef: decodedToken.customerRef,
+        enquirygId,
+        fullAddress,
+        crewId: decodedToken.crewid,
+        crewName: crewIdentiy.crewName
+      });
+
+      const crewEnquieryData = await crewNewEnquiery.save();
+      return res.status(200).json({
+        message: 'Crew enquiery created successfully',
+        data: crewEnquieryData
+      })
+
+    }
     if (!user) {
       return res.status(404).json({ error: true, message: 'User not found' });
     }
-    const { Name, Number, Email, altContact, fullAddress } = req.body;
 
-    if (!Name || !Number || !Email || !altContact ) {
-      return res.status(400).send('All fields are required');
-    }
-    const enquirygId = `BOOK-${Date.now()}`;
+    const enquirygId = `ENQUIR-${Date.now()}`;
 
     const newEnquiery = new enquiery({
       Name,
@@ -253,11 +307,11 @@ exports.enquiery = async (req, res) => {
       fullAddress,
     });
 
-   const enquieryData = await newEnquiery.save();
+    const enquieryData = await newEnquiery.save();
     return res.status(200).json({
       message: 'Enquiery created successfully',
       data: enquieryData
-    })
+    });
 
 
   } catch (erroe) {
@@ -275,7 +329,7 @@ exports.enquiery = async (req, res) => {
 //--------------------------------Get Enquery -----------------------------------------------------
 exports.getEnquerylist = async (req, res) => {
   const authToken = req.headers.authorization;
-
+  console.log("token", authToken)
   if (!authToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
   }
@@ -302,33 +356,38 @@ exports.getEnquerylist = async (req, res) => {
 
     const userId = decodedToken.userId;
     const user = await User.findById(userId);
-    // const userBookings = await booking.find({ customerId: decodedToken.userid });
+    const crewIdentiy = await crewentry.findOne({ crewid: decodedToken.crewid });
 
-    if (!user) {
-      const crewBookings = await booking.find({ crewId: decodedToken.crewid });
-
-      if (!crewBookings || crewBookings.length === 0) {
+    if (user?.Jwttoken || crewIdentiy?.Jwttoken) {
+      const userTokenMatch = token === user?.Jwttoken;
+      const crewTokenMatch = token === crewIdentiy?.Jwttoken;
+      console.log("chek crew ", crewIdentiy);
+      if (!userTokenMatch && !crewTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    if (decodedToken.crewid) {
+      const crewEnquieryData = await enquiery.find({ crewId: decodedToken.crewid, customerRef: decodedToken.customerRef, __v: 0});
+      if (crewEnquieryData) {
         return res.status(200).json({
-          error: true,
-          message: "No bookings found for the crew member",
-          data: []
+          error: false,
+          message: "Enquery retrieved for crew member",
+          data: crewEnquieryData
         });
       } else {
         return res.status(200).json({
-          error: false,
-          message: "Bookings retrieved for crew member",
-          data: crewBookings
+          error: true,
+          message: "No enquiery found for the crew member",
+          data: []
         });
       }
     }
 
-    // User is found, proceed to fetch bookings based on customerRef
-    const foundUser = await registrionapi.findOne({ customerRef: decodedToken.customerRef });
-
-    if (!foundUser) {
-      return res.status(404).json({ error: true, message: 'User not found in custom API model' });
+    if (!user) {
+      return res.status(404).json({ error: true, message: 'User not found ' });
     }
 
+   
     const customerRef = user.customerRef;
     const enquieryEntries = await enquiery.find({ customerRef, __v: 0 });
 
@@ -341,11 +400,9 @@ exports.getEnquerylist = async (req, res) => {
       message: 'Enquiery Entries retrieved successfully',
       data: enquieryEntries,
     });
+    
   } catch (error) {
     console.error('Error fetching customer entries:', error.message);
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-    }
     return res.status(500).json({ error: true, message: error.message });
   }
 };

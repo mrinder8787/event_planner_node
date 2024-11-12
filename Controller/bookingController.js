@@ -255,3 +255,62 @@ exports.bookingStatusUpdate = async (req, res) => {
     });
   }
 };
+
+
+//----------------------------------Booking GetName And Id ==========================
+
+exports.getBookinglistName = async (req, res) => {
+  const authToken = req.headers.authorization;
+
+  if (!authToken) {
+    return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+  }
+
+  try {
+    const token = authToken.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+    console.log('decoded token', decodedToken);
+
+    if (!decodedToken) {
+      console.error("Failed to decode token:", token);
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    if (!decodedToken.customerRef) {
+      console.error("Missing customerRef in token:", decodedToken);
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    if (!decodedToken.userId) {
+      console.error("Missing userId in token:", decodedToken);
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    const userId = decodedToken.userId;
+    const user = await User.findById(userId);
+   
+    if (!user) {
+      console.error(" userId => ", userId);
+     return res.status(404).json({
+      error:true,
+      message:"User Not Found"
+     })
+    }
+    const bookingEntries = await booking.find({ customerRef:decodedToken.customerRef, __v: 0 })
+    .select('Name bookingId _id');
+
+    if (!bookingEntries || bookingEntries.length === 0) {
+      return res.status(404).json({ error: true, message: 'No customer entries found for this customer', data: [] });
+    }
+    console.log("booking Fetach",bookingEntries);
+    return res.status(200).json({
+      error: false,
+      message: 'Booking entries retrieved successfully',
+      data: bookingEntries,
+    });
+  } catch (error) {
+    console.error('Error fetching getBookinglistName :', error.message);
+
+    return res.status(500).json({ error: true, message: error.message });
+  }
+};

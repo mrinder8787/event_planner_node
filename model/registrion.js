@@ -25,6 +25,6 @@ const registraion = new mongoose.Schema({
   otp: {
     type: String
   }
-});
+},{ timestamps: true });
 
 module.exports = mongoose.model('OwnerRegistrions', registraion);

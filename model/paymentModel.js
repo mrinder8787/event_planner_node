@@ -6,15 +6,17 @@ const paymentSchema= mongoose.Schema({
     },
 crewid:{
     type:String,
-    requerd:true,
 },
 bookingid:{
+    type:String,
+},
+otherExpenses:{
     type:String,
 },
 customerRef:{
     type:String,
     required: true,
   },
-})
+},{ timestamps: true });
 
 module.exports = mongoose.model('Crew Payments', paymentSchema);

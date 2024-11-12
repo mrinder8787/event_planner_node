@@ -24,6 +24,6 @@ const leaveRequestCrew = mongoose.Schema({
         type: String,
         default: "Pending"
     }
-})
+},{ timestamps: true });
 
 module.exports = mongoose.model('LeaveRequestCrew', leaveRequestCrew);

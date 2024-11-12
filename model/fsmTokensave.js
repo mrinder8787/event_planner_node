@@ -10,6 +10,6 @@ const fsmtokenShecma = new mongoose.Schema({
     requerd:true,
    },
  
-});
+},{ timestamps: true });
 
 module.exports = mongoose.model('OwnerFsmToken', fsmtokenShecma);

@@ -91,7 +91,6 @@ exports.bookingStatusCount = async (req, res) => {
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
 
-        // Verify if the user JWT token matches
         const user = await User.findOne({ customerRef: decodedToken.customerRef });
         if (user.Jwttoken) {
             const userTokenMatch = token === user.Jwttoken;
@@ -101,14 +100,13 @@ exports.bookingStatusCount = async (req, res) => {
         }
 
         //-------------------------- Status Count Queries --------------------------
-        // Count for each status
+       
         const totalBookingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef,__v:0 });
         const pendingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Pending',__v:0 });
         const successCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Success',__v:0 });
         const cancelCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Cancel',__v:0 });
         const deliverCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Deliver',__v:0 });
-
-        // Return the counts in the response
+        
         return res.status(200).json({
             error: false,
             message: 'Booking status counts retrieved successfully',

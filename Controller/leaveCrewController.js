@@ -72,7 +72,6 @@ exports.leaveStatusUpadte = async (req, res) => {
     try {
         const token = authToken.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
-        console.log("decoded token", decodedToken);
         if (!decodedToken) {
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
@@ -142,7 +141,7 @@ exports.getAllrequest = async (req, res) => {
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
         const user = await User.findOne({ customerRef: decodedToken.customerRef, _id: decodedToken.userId });
-        const crew = await Crew.findOne({ customerRef: decodedToken.customerRef, crewid: decodedToken.crewid,_id: decodedToken.userId});
+        const crew = await Crew.findOne({ customerRef: decodedToken.customerRef, crewid: decodedToken.crewid, _id: decodedToken.userId });
         if (user.Jwttoken || crew.jwttoken) {
             const userTokenMatch = token === user.Jwttoken;
             const crewTokenMatch = token === crew.Jwttoken;
@@ -154,18 +153,18 @@ exports.getAllrequest = async (req, res) => {
         if (user) {
             const requstlist = await leaveRequest.find({ customerRef: decodedToken.customerRef });
             return res.status(200).json({
-                 error: false,
-                  message: 'All request fetch',
-                  data:requstlist
-                });
+                error: false,
+                message: 'All request fetch',
+                data: requstlist
+            });
         }
         if (crew) {
-            const crewrequstlist = await leaveRequest.find({customerRef: decodedToken.customerRef,crewid:decodedToken.crewid});
+            const crewrequstlist = await leaveRequest.find({ customerRef: decodedToken.customerRef, crewid: decodedToken.crewid });
             return res.status(200).json({
-                 error: false,
-                  message: 'All request fetch',
-                  data:crewrequstlist,
-                });
+                error: false,
+                message: 'All request fetch',
+                data: crewrequstlist,
+            });
         }
 
 

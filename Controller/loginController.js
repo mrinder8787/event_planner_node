@@ -15,7 +15,7 @@ exports.loginApi = async (req, res) => {
     console.log("s",existingUser);
     const crewexistingUser = await crewentry.findOne({crewEmail:email});
     if (existingUser) {
-      console.log("login Successfully",existingUser)
+      console.log("existingUser",existingUser)
       const passwordMatch = await bcrypt.compare(password, existingUser.password);
       if (passwordMatch) {
         const expiresIn = 24 * 60 * 60;
