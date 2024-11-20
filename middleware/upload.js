@@ -10,18 +10,17 @@ const storage = multer.diskStorage({
   }
 });
 
-// Initialize upload
+
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 1000000 // 1MB max limit
+    fileSize: 1000000 
   },
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   }
-}).single('imageUrl'); // Ensure this is 'imageUrl'
+}).single('imageUrl');
 
-// Check file type
 function checkFileType(file, cb) {
   const filetypes = /jpeg|jpg|png|gif/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -34,7 +33,7 @@ function checkFileType(file, cb) {
   }
 }
 
-// Middleware to check file size
+
 function checkFileSize(req, res, next) {
   const file = req.file;
   const minSize = 50000; // 50 KB

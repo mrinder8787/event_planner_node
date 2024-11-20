@@ -314,3 +314,59 @@ exports.getBookinglistName = async (req, res) => {
     return res.status(500).json({ error: true, message: error.message });
   }
 };
+
+
+//-------------------------------------------- Booking Delete ------------------------------------------------
+
+
+exports.bookingDelete = async (req,res)=>{
+  const authToken = req.headers.authorization;
+  const { id } = req.params;
+  if (!authToken) {
+    return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+  }
+  try {
+    const token = authToken.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+
+    if (!decodedToken) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    if (!decodedToken.customerRef || !decodedToken.userId) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    const user = await User.findOne({ customerRef: decodedToken.customerRef });
+    if (user && user.Jwttoken !== token) {
+      return res.status(404).json({ error: true, message: 'User Login Another Device' });
+    }
+    const bookingFind = await booking.findById(id);
+    console.log("booking find ",bookingFind)
+    if(bookingFind.__v===1){
+      return res.status(404).json({ error: true, message: 'Booking not found' }); 
+    }
+    const deleteBooking = await booking.findByIdAndUpdate(
+      id,
+      {__v:1 },
+      { new: true, runValidators: true }
+    );
+
+    if (!deleteBooking) {
+      return res.status(404).json({ error: true, message: 'Booking not found' });
+    }
+   
+    console.log("Booking Delete Successfully",deleteBooking);
+    return res.status(200).json({
+      error: false,
+      message: 'Booking delete successfully',
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      error: true,
+      message: error.message
+    });
+  }
+
+}

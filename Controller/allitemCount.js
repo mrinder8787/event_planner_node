@@ -15,18 +15,15 @@ exports.allItemCount = async (req, res) => {
     try {
         const token = authToken.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
-        console.log('decoded token',decodedToken);
         if (!decodedToken) {
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
 
         if (!decodedToken.customerRef) {
-          
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
 
         if (!decodedToken.userId) {
-           
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
         const user = await User.findOne({ customerRef: decodedToken.customerRef });

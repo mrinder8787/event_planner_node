@@ -88,6 +88,10 @@ const crewentry = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  crewImage: {
+    type: String,
+    required: true,
+  },
   resetPasswordOTP: String,
   resetPasswordOTPExpires: Date,
   Jwttoken:String,

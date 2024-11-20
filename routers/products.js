@@ -52,6 +52,7 @@ router.post("/getBookingPayment-Date",paymentGet.getAmountbyDate);
 
 router.put("/bookingsUpadte/:id",bookingController.bookingUpdate);
 router.put("/bookingStatusUpadte/:id",bookingController.bookingStatusUpdate);
+router.put("/bookingDelete/:id",bookingController.bookingDelete);
 //-------------------------------get Api -----------------------------
 router.get("/allItem-Count",allItemCount.allItemCount);
 router.get('/bussiness-ownerDelete', adminRegistrion.bussinessOwnerdelete);
