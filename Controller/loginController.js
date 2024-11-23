@@ -14,6 +14,7 @@ exports.loginApi = async (req, res) => {
     const existingUser = await registrionapi.findOne({email});
     console.log("s",existingUser);
     const crewexistingUser = await crewentry.findOne({crewEmail:email});
+    console.log("crew member",crewexistingUser);
     if (existingUser) {
       console.log("existingUser",existingUser)
       const passwordMatch = await bcrypt.compare(password, existingUser.password);
@@ -48,7 +49,7 @@ exports.loginApi = async (req, res) => {
           { expiresIn: expiresIn }
         );
 
-        crewexistingUser.jwttoken = token;
+        crewexistingUser.Jwttoken = token;
         await crewexistingUser.save();
         return res.status(200).json({
           error: false,

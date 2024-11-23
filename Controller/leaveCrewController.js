@@ -31,7 +31,7 @@ exports.leaveRequestCrew = async (req, res) => {
         if (user.Jwttoken || crew.jwttoken) {
             const userTokenMatch = token === user.Jwttoken;
             const crewTokenMatch = token === crew.Jwttoken;
-            if (!userTokenMatch || crewTokenMatch) {
+            if (!userTokenMatch && !crewTokenMatch) {
                 return res.status(404).json({ error: true, message: 'Login Another Device' });
             }
         }
@@ -88,7 +88,7 @@ exports.leaveStatusUpadte = async (req, res) => {
         if (user.Jwttoken || crew.jwttoken) {
             const userTokenMatch = token === user.Jwttoken;
             const crewTokenMatch = token === crew.Jwttoken;
-            if (!userTokenMatch || crewTokenMatch) {
+            if (!userTokenMatch && !crewTokenMatch) {
                 return res.status(404).json({ error: true, message: 'Login Another Device' });
             }
         }
@@ -100,7 +100,7 @@ exports.leaveStatusUpadte = async (req, res) => {
             return res.status(200).json({
                 error: false,
                 message: "Requset Upadte Successfully !",
-                data: saveData,
+                data: requestFind,
             })
 
         }
