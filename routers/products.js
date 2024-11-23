@@ -21,7 +21,6 @@ const payment = require("../Controller/paymentController");
 const allItemCount =require("../Controller/allitemCount");
 const accountDetails =require('../Controller/accountDetailsController');
 const leaveRequestCrew = require('../Controller/leaveCrewController');
-
 const CalculateProfitloss= require("../Controller/profitLoss");
 
 
@@ -45,15 +44,17 @@ router.post("/Owner-fsmToken",fsmTokenRoute.fsmtoken);
 router.post("/Owner-accountDetails-save",accountDetails.accountDetails);
 router.post('/Crewleave-add',leaveRequestCrew.leaveRequestCrew);
 router.post('/leaveRequest-Status',leaveRequestCrew.leaveStatusUpadte);
-
 router.post('/profit-loss',CalculateProfitloss.profitLoss);
 router.post("/getBookingPayment-Date",paymentGet.getAmountbyDate);
+
 //--------------------------------------Put Api Route0---------------------------
 
 router.put("/bookingsUpadte/:id",bookingController.bookingUpdate);
 router.put("/bookingStatusUpadte/:id",bookingController.bookingStatusUpdate);
 router.put("/bookingDelete/:id",bookingController.bookingDelete);
+
 //-------------------------------get Api -----------------------------
+
 router.get("/allItem-Count",allItemCount.allItemCount);
 router.get('/bussiness-ownerDelete', adminRegistrion.bussinessOwnerdelete);
 router.get('/bookinglist',postController.getBookinglist);
