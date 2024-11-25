@@ -18,9 +18,10 @@ exports.registraionApi = async (req, res) => {
   const { email, otp } = req.body;
   try {
     const existingUser = await registrionapi.findOne({ email });
-    const owenerOtpVerify = await otpSendAdmin.findOne({ email });
+   const owenerOtpVerify = await otpSendAdmin.findOne({email:email});
+    console.log("otp view ", owenerOtpVerify)
     const crewexistingUser = await crewentry.findOne({ crewEmail: email });
-    if(!owenerOtpVerify){
+    if (!owenerOtpVerify) {
       return res.status(400).json({
         error: true,
         message: "Invalid OTP, does not match",
@@ -33,7 +34,7 @@ exports.registraionApi = async (req, res) => {
         message: "Invalid OTP, does not match",
       });
     }
- 
+
     if (!otp) {
       return res.status(400).json({
         error: true,
@@ -165,6 +166,7 @@ exports.adminSendRegistrionMail = async (req, res) => {
       return res.status(400).json({ error: 'Email id is required. & Passowrd' });
     }
     const existingUser = await registrionapi.findOne({ email });
+    console.log("Updated OTP:999=>", existingUser);
     if (existingUser) {
       const passwordMatch = await bcrypt.compare(password, existingUser.password);
       console.log("Updated OTP:", passwordMatch);
@@ -245,14 +247,14 @@ exports.bussinessOwnerdelete = async (req, res) => {
     if (!decodedToken) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
-    const owner = await registrionapi.findOne({_id:decodedToken.userId,__v:0});
-    if(owner){
+    const owner = await registrionapi.findOne({ _id: decodedToken.userId, __v: 0 });
+    if (owner) {
       await registrionapi.findByIdAndUpdate(
         decodedToken.userId,
         { __v: 1 },
         { new: true }
       );
-  
+
       return res.status(200).json({
         error: false,
         message: "Deleted successfully",
@@ -260,10 +262,10 @@ exports.bussinessOwnerdelete = async (req, res) => {
     }
 
     return res.status(400).json({
-      error:true,
-      message:"Your Account Already Delete"
+      error: true,
+      message: "Your Account Already Delete"
     });
-   
+
   } catch (error) {
     return res.status(500).json({
       error: true,

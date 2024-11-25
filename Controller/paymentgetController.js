@@ -2,6 +2,8 @@ const paymentModel = require('../model/paymentModel');
 const jwt = require('jsonwebtoken');
 const bookingModel = require('../model/bookingModel');
 const moment = require('moment-timezone');
+const crewMember = require('../model/crewentry');
+const User = require('../model/registrion');
 require('dotenv').config();
 
 
@@ -27,6 +29,25 @@ exports.paymentget = async (req, res) => {
     if (!decodedToken.userId) {
       console.error("Missing userId in token:", decodedToken);
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+    const user = await User.findOne({ customerRef: decodedToken.customerRef });
+    const crew = await crewMember.findOne({ customerRef: decodedToken.customerRef, crewid: decodedToken.crewid });
+    if (user.Jwttoken || crew.Jwttoken) {
+        const userTokenMatch = token === user.Jwttoken;
+        const crewTokenMatch = token === crew?.Jwttoken;
+        if (!userTokenMatch && !crewTokenMatch) {
+            return res.status(404).json({ error: true, message: 'Login Another Device' });
+        }
+    }
+    if(crew){
+      const payment = await paymentModel.find({ customerRef: decodedToken.customerRef,crewid:decodedToken.crewid});
+      const totalAmount = payment.reduce((acc, curr) => acc + Number(curr.amount), 0);
+      return res.status(200).json({
+        error: false,
+        message: 'Crew Payments Fetched Successfully',
+        totalAmount: totalAmount,
+        data: payment
+      });
     }
     const payment = await paymentModel.find({ customerRef: decodedToken.customerRef });
 

@@ -8,6 +8,10 @@ const leaveRequestCrew = mongoose.Schema({
         type: String,
         requerd: true,
     },
+    crewName:{
+        type:String,
+        requerd:true,
+       },
     fromDate: {
         type: String,
         required: true,

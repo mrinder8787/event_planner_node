@@ -28,7 +28,7 @@ exports.leaveRequestCrew = async (req, res) => {
         }
         const user = await User.findOne({ customerRef: decodedToken.customerRef });
         const crew = await Crew.findOne({ customerRef: decodedToken.customerRef, crewid: decodedToken.crewid });
-        if (user.Jwttoken || crew.jwttoken) {
+        if (user.Jwttoken || crew.Jwttoken) {
             const userTokenMatch = token === user.Jwttoken;
             const crewTokenMatch = token === crew.Jwttoken;
             if (!userTokenMatch && !crewTokenMatch) {
@@ -40,7 +40,8 @@ exports.leaveRequestCrew = async (req, res) => {
             fromDate,
             toDate,
             customerRef: decodedToken.customerRef,
-            crewid: decodedToken.crewid
+            crewid: decodedToken.crewid,
+            crewName:crew.crewName
         });
 
         const saveData = await newRequst.save();
@@ -85,7 +86,7 @@ exports.leaveStatusUpadte = async (req, res) => {
         }
         const user = await User.findOne({ customerRef: decodedToken.customerRef });
         const crew = await Crew.findOne({ customerRef: decodedToken.customerRef, crewid: decodedToken.crewid });
-        if (user.Jwttoken || crew.jwttoken) {
+        if (user.Jwttoken || crew.Jwttoken) {
             const userTokenMatch = token === user.Jwttoken;
             const crewTokenMatch = token === crew.Jwttoken;
             if (!userTokenMatch && !crewTokenMatch) {
@@ -142,13 +143,10 @@ exports.getAllrequest = async (req, res) => {
         }
         const user = await User.findOne({ customerRef: decodedToken.customerRef, _id: decodedToken.userId });
         const crew = await Crew.findOne({ customerRef: decodedToken.customerRef, crewid: decodedToken.crewid, _id: decodedToken.userId });
-        if (user.Jwttoken || crew.jwttoken) {
-            const userTokenMatch = token === user.Jwttoken;
-            const crewTokenMatch = token === crew.Jwttoken;
-            if (!userTokenMatch || crewTokenMatch) {
-                return res.status(404).json({ error: true, message: 'Login Another Device' });
-            }
+        if ((user && user.Jwttoken && token !== user.Jwttoken) || (crew && crew.Jwttoken && token !== crew.Jwttoken)) {
+            return res.status(404).json({ error: true, message: 'Login Another Device' });
         }
+        
 
         if (user) {
             const requstlist = await leaveRequest.find({ customerRef: decodedToken.customerRef });

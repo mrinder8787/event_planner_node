@@ -22,6 +22,7 @@ const allItemCount =require("../Controller/allitemCount");
 const accountDetails =require('../Controller/accountDetailsController');
 const leaveRequestCrew = require('../Controller/leaveCrewController');
 const CalculateProfitloss= require("../Controller/profitLoss");
+const crewResignationController = require("../Controller/crewResignController");
 
 
 //------------------------------------Start Route Post--------------------------------------------
@@ -46,10 +47,12 @@ router.post('/Crewleave-add',leaveRequestCrew.leaveRequestCrew);
 router.post('/leaveRequest-Status',leaveRequestCrew.leaveStatusUpadte);
 router.post('/profit-loss',CalculateProfitloss.profitLoss);
 router.post("/getBookingPayment-Date",paymentGet.getAmountbyDate);
+router.post("/crew-Resignation",crewResignationController.crewResignation);
 
 //--------------------------------------Put Api Route0---------------------------
 
 router.put("/bookingsUpadte/:id",bookingController.bookingUpdate);
+router.put('/updatecrew-resignation/:resignationId',crewResignationController.updateCrewResignation)
 router.put("/bookingStatusUpadte/:id",bookingController.bookingStatusUpdate);
 router.put("/bookingDelete/:id",bookingController.bookingDelete);
 
@@ -68,6 +71,7 @@ router.get("/crewNamelist",crewEntryController.getCrewNamelist);
 router.get('/getleave-request',leaveRequestCrew.getAllrequest);
 router.get("/getBooking-nameId",bookingController.getBookinglistName);
 router.get("/getBookingPayment/:bookingId",paymentGet.getAmountbyBookingId);
+router.get("/getCrew-Resigntion",crewResignationController.getResignData);
 
 
 module.exports = router;
