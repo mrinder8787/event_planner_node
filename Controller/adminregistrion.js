@@ -18,7 +18,7 @@ exports.registraionApi = async (req, res) => {
   const { email, otp } = req.body;
   try {
     const existingUser = await registrionapi.findOne({ email });
-   const owenerOtpVerify = await otpSendAdmin.findOne({email:email});
+   const owenerOtpVerify = await otpSendAdmin.findOne({ email });
     console.log("otp view ", owenerOtpVerify)
     const crewexistingUser = await crewentry.findOne({ crewEmail: email });
     if (!owenerOtpVerify) {
