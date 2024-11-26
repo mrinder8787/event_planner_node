@@ -9,7 +9,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-//----------------------------------------Multter Start -==========================================
+//----------------------------------------Multter Start -=========================================
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -49,6 +49,7 @@ const upload = multer({
 
 
 ///---------------------------------------------Multer End ----------------------------------
+
 const generateRandomNumber = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
@@ -111,18 +112,18 @@ exports.crewentry = async (req, res) => {
             return res.status(404).json({ error: true, message: 'User Login Another Device' });
           }
         }
-        const existingCrewNumber = await crewentry.findOne({ crewNumber, customerRef: user.customerRef });
+        const existingCrewNumber = await crewentry.findOne({ crewNumber, customerRef: user.customerRef,__v:0 });
         if (existingCrewNumber) {
           return res.status(400).json({ error: true, message: 'Crew number already exists' });
         }
     
     
-        const existingCrewEmail = await crewentry.findOne({ crewEmail, customerRef: user.customerRef });
+        const existingCrewEmail = await crewentry.findOne({ crewEmail, customerRef: user.customerRef,__v:0});
         if (existingCrewEmail) {
           return res.status(400).json({ error: true, message: 'Crew email already exists' });
         }
     
-        const existingAdharcard = await crewentry.findOne({ Adharcard, customerRef: user.customerRef });
+        const existingAdharcard = await crewentry.findOne({Adharcard, customerRef: user.customerRef,__v:0});
         if (existingAdharcard) {
           return res.status(400).json({ error: true, message: 'Adharcard number already exists' });
         }
