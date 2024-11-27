@@ -37,7 +37,7 @@ const customerEntry = new mongoose.Schema({
     type:String,
     requerd:true,
    },
-   Dateofbirth:{
+   customerAge:{
     type:String,
     requerd:true,
    },

@@ -18,9 +18,7 @@ const generateCustomerId = (customerName, mobileNumber) => {
 
 
 exports.customerentry = async (req, res) => {
-  const { customerName, customerNumber, customerEmail, altContact, Address, State, City, pincode, reamark, publishDate, crewId,
-    Whosenameby,
-  } = req.body;
+  const { customerName, customerNumber, customerEmail, altContact, Address, State, City, pincode, reamark, publishDate,customerAge} = req.body;
   const authToken = req.headers.authorization;
 
   if (!authToken) {
@@ -83,6 +81,7 @@ exports.customerentry = async (req, res) => {
             publishDate: publishDate,
             crewId: decodedToken.crewid,
             Whosenameby: crewCheck.crewName,
+            customerAge
           });
 
           const savedcustomerentry = await newcustomerentry.save();
@@ -94,54 +93,8 @@ exports.customerentry = async (req, res) => {
           });
 
         }
-        //----------------------------------------User Registrion type ---------------------------------
-
+      
       }
-      // else if (userFound) {
-      //   const { customerRef } = req.body;
-      //   const user = await User.findOne({ customerRef: customerRef });
-      //   const userFoundbyCust = await customerEntry.findOne({
-      //     $and: [
-      //       { customerRef: customerRef },
-      //       { customerId: decodedToken.userid }
-      //     ]
-      //   });
-      //   console.log('user found', userFoundbyCust);
-      //   if (userFoundbyCust) {
-      //     return res.status(400).json({
-      //       error: false,
-      //       message: 'User Alredy add This Bussinse',
-      //       data: [],
-      //     });
-
-      //   }
-      //   console.log("userdataga", user);
-      //   const newcustomerentry = new customerEntry({
-      //     userId: user._id,
-      //     customerId: decodedToken.userid,
-      //     customerName: customerName,
-      //     customerNumber: customerNumber,
-      //     customerEmail: userFound.email,
-      //     altContact: altContact,
-      //     Address: Address,
-      //     State: State,
-      //     City: City,
-      //     pincode: pincode,
-      //     Adharcard: req.body.Adharcard,
-      //     reamark: reamark,
-      //     customerRef: customerRef,
-      //     publishDate: publishDate,
-      //   });
-
-      //   const savedcustomerentry = await newcustomerentry.save();
-      //   return res.status(200).json({
-      //     error: false,
-      //     message: 'User Entry Saved Successfully!',
-      //     data: savedcustomerentry,
-      //   });
-
-      // }
-      // return res.status(404).json({ error: true, message: 'User not found' });
     }
 
     //---------------------Bussiness Owener Add Customere-----------------------------
@@ -158,6 +111,7 @@ exports.customerentry = async (req, res) => {
       State: State,
       City: City,
       pincode: pincode,
+      customerAge,
       Adharcard: req.body.Adharcard,
       reamark: reamark,
       customerRef: decodedToken.customerRef,
