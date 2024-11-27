@@ -227,7 +227,7 @@ exports.getBookinglist = async (req, res) => {
 
 exports.enquiery = async (req, res) => {
   const authToken = req.headers.authorization;
-  const { Name, Number, Email, altContact, fullAddress } = req.body;
+  const { Name, Number, Email, altContact, fullAddress,state,city } = req.body;
   if (!Name || !Number || !Email || !altContact) {
     return res.status(400).send('All fields are required');
   }
@@ -276,6 +276,8 @@ exports.enquiery = async (req, res) => {
         Name,
         Number,
         Email,
+        state,
+        city,
         altContact,
         customerRef: decodedToken.customerRef,
         enquirygId,
@@ -289,7 +291,6 @@ exports.enquiery = async (req, res) => {
         message: 'Crew enquiery created successfully',
         data: crewEnquieryData
       })
-
     }
     if (!user) {
       return res.status(404).json({ error: true, message: 'User not found' });
@@ -301,6 +302,8 @@ exports.enquiery = async (req, res) => {
       Name,
       Number,
       Email,
+      state,
+      city,
       altContact,
       customerRef: user.customerRef,
       enquirygId,

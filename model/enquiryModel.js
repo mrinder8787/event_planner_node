@@ -21,6 +21,14 @@ const enquiryShecma = new mongoose.Schema({
     type:String,
     requerd:true,
    },
+   state:{
+    type:String,
+    requerd:true,
+   },
+   city:{
+    type:String,
+    requerd:true,
+   },
   customerRef:{
     type:String,
     required: true,
