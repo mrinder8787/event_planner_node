@@ -208,7 +208,9 @@ exports.adminSendRegistrionMail = async (req, res) => {
   const { email, password, brand, device, model, type } = req.body;
   try {
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email id is required. & Passowrd' });
+      return res.status(400).json({
+        error:true,
+         message: 'Email id is required. & Passowrd' });
     }
     if (!brand || !device) {
       return res.status(400).json({ error: 'Device details requerd' });
