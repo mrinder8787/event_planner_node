@@ -15,23 +15,94 @@ const generateOTP = () => {
 };
 
 exports.registraionApi = async (req, res) => {
-  const { email, otp } = req.body;
+  const { email, otp, name, bussinesName, mobileNumber } = req.body;
   try {
     const existingUser = await registrionapi.findOne({ email });
-   const owenerOtpVerify = await otpSendAdmin.findOne({email});
+    const owenerOtpVerify = await otpSendAdmin.findOne({ email });
     console.log("otp view ", owenerOtpVerify)
-    const crewexistingUser = await crewentry.findOne({ crewEmail: email });
     if (!owenerOtpVerify) {
       return res.status(400).json({
         error: true,
-        message: "Invalid OTP, does not match",
+        message: "Invalid OTP",
       });
     }
     if (owenerOtpVerify.otp !== otp) {
       console.log("otp -->", owenerOtpVerify.otp)
       return res.status(400).json({
         error: true,
-        message: "Invalid OTP, does not match",
+        message: "OTP does not match",
+      });
+    }
+
+    if (!otp) {
+      return res.status(400).json({
+        error: true,
+        message: 'Otp field are requerd',
+      });
+    }
+    if (existingUser) {
+      return res.status(400).json({
+        error: true,
+        message: 'email already Exits',
+      });
+    }
+    const hashedPassword = await bcrypt.hash(owenerOtpVerify.password, 10);
+    const customerRefNo = generateCustomerRef();
+
+    const newUser = new registrionapi({
+      email: owenerOtpVerify.email,
+      password: hashedPassword,
+      customerRef: customerRefNo,
+      name,
+      bussinesName,
+      mobileNumber,
+    });
+
+    const registrationData = await newUser.save();
+    await otpSendAdmin.deleteOne({ email });
+    if (registrationData) {
+      const expiresIn = 24 * 60 * 60;
+      const token = jwt.sign(
+        { userId: registrationData._id, customerRef: registrationData.customerRef },
+        process.env.ACCESS_SECRET_TOKEN,
+        { expiresIn: expiresIn }
+      );
+      registrationData.Jwttoken = token;
+      await registrationData.save();
+      return res.status(200).json({
+        error: false,
+        msg: 'Register User Successfully! OTP Verified',
+        data: registrationData,
+      });
+    }
+
+
+  } catch (error) {
+    return res.status(400).json({
+      error: true,
+      message: error.message,
+    });
+  }
+};
+
+exports.ownerloginApi = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const existingUser = await registrionapi.findOne({ email });
+    const owenerOtpVerify = await otpSendAdmin.findOne({ email });
+    console.log("otp view ", owenerOtpVerify)
+    const crewexistingUser = await crewentry.findOne({ crewEmail: email });
+    if (!owenerOtpVerify) {
+      return res.status(400).json({
+        error: true,
+        message: "Invalid OTP",
+      });
+    }
+    if (owenerOtpVerify.otp !== otp) {
+      console.log("otp -->", owenerOtpVerify.otp)
+      return res.status(400).json({
+        error: true,
+        message: "OTP does not match",
       });
     }
 
@@ -119,34 +190,10 @@ exports.registraionApi = async (req, res) => {
       }
     }
 
-    //-------------------------------New Registrion ----------------
-    const hashedPassword = await bcrypt.hash(owenerOtpVerify.password, 10);
-    const customerRefNo = generateCustomerRef();
-
-    const newUser = new registrionapi({
-      email: owenerOtpVerify.email,
-      password: hashedPassword,
-      customerRef: customerRefNo,
-    });
-
-    const registrationData = await newUser.save();
-    await otpSendAdmin.deleteOne({ email });
-    if (registrationData) {
-      const expiresIn = 24 * 60 * 60;
-      const token = jwt.sign(
-        { userId: registrationData._id, customerRef: registrationData.customerRef },
-        process.env.ACCESS_SECRET_TOKEN,
-        { expiresIn: expiresIn }
-      );
-      registrationData.Jwttoken = token;
-      await registrationData.save();
-      return res.status(200).json({
-        error: false,
-        msg: 'Register User Successfully! OTP Verified',
-        data: registrationData,
-      });
-    }
-
+    return res.status(400).json({
+      error: true,
+      message: "Data not found"
+    })
 
   } catch (error) {
     return res.status(400).json({
@@ -157,16 +204,81 @@ exports.registraionApi = async (req, res) => {
 };
 
 
-
-
 exports.adminSendRegistrionMail = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, brand, device, model, type } = req.body;
   try {
     if (!email || !password) {
       return res.status(400).json({ error: 'Email id is required. & Passowrd' });
     }
+    if (!brand || !device) {
+      return res.status(400).json({ error: 'Device details requerd' });
+    }
     const existingUser = await registrionapi.findOne({ email });
+    const crewexistingUser = await crewentry.findOne({ crewEmail: email });
+    if (crewexistingUser && type === "Login") {
+      const passwordMatch = await bcrypt.compare(password, crewexistingUser.crewpassword);
+      if (!passwordMatch) {
+        return res.status(400).json({
+          error: true,
+          message: 'Wrong password',
+        });
+      }
+
+      const otp = generateOTP();
+      await sendMail(
+        email,
+        `Event Planner: ${type} OTP Verification`,
+        `Dear User,
+      
+    Thank you for ${type} with Event Planner. To complete your ${type}, please use the OTP (One-Time Password) provided below:
+    
+    Your OTP code is: [${otp}]
+    
+    Please enter this OTP in the provided field on the ${type} page to verify your email address and complete your ${type} process.
+    
+    **Device Details:**
+    - Device Brand: [${brand}]
+    - Device: [${device}]
+    - Device Model: [${model}]
+
+    If you didn't request this OTP, please ignore this email.
+    
+    Thank you,  
+    Event Planner Team
+    `
+      );
+      let otpRecord = await otpSendAdmin.findOne({ email });
+      if (otpRecord) {
+        otpRecord.otp = otp;
+        otpRecord.password = password;
+        otpRecord.otpExpires = Date.now() + 10 * 60 * 1000;
+        await otpRecord.save();
+        console.log("Updated OTP:", otpRecord.otp);
+      } else {
+        const newOtpSend = new otpSendAdmin({
+          email,
+          password,
+          otp,
+          otpExpires: Date.now() + 10 * 60 * 1000,
+        });
+        otpRecord = await newOtpSend.save();
+        console.log("Generated new OTP:", otpRecord);
+      }
+
+      return res.status(200).json({
+        error: false,
+        message: `OTP Sent to Your Mail`,
+      });
+
+    }
+
     console.log("Updated OTP:999=>", existingUser);
+    if (!existingUser && type === "Login") {
+      return res.status(400).json({
+        error: true,
+        message: 'Please signup',
+      });
+    }
     if (existingUser) {
       const passwordMatch = await bcrypt.compare(password, existingUser.password);
       console.log("Updated OTP:", passwordMatch);
@@ -176,36 +288,92 @@ exports.adminSendRegistrionMail = async (req, res) => {
           message: 'Wrong password',
         });
       }
+      const otp = generateOTP();
+      await sendMail(
+        email,
+        `Event Planner: ${type} OTP Verification`,
+        `Dear User,
+      
+    Thank you for ${type} with Event Planner. To complete your ${type}, please use the OTP (One-Time Password) provided below:
+    
+    Your OTP code is: [${otp}]
+    
+    Please enter this OTP in the provided field on the ${type} page to verify your email address and complete your ${type} process.
+    
+    **Device Details:**
+    - Device Brand: [${brand}]
+    - Device: [${device}]
+    - Device Model: [${model}]
+
+    If you didn't request this OTP, please ignore this email.
+    
+    Thank you,  
+    Event Planner Team
+    `
+      );
+
+
+
+      let otpRecord = await otpSendAdmin.findOne({ email });
+
+      if (otpRecord) {
+        otpRecord.otp = otp;
+        otpRecord.password = password;
+        otpRecord.otpExpires = Date.now() + 10 * 60 * 1000;
+        await otpRecord.save();
+        console.log("Updated OTP:", otpRecord.otp);
+      } else {
+        const newOtpSend = new otpSendAdmin({
+          email,
+          password,
+          otp,
+          otpExpires: Date.now() + 10 * 60 * 1000,
+        });
+        otpRecord = await newOtpSend.save();
+        console.log("Generated new OTP:", otpRecord);
+      }
+
+      return res.status(200).json({
+        error: false,
+        message: `OTP Sent to Your Mail`,
+      });
     }
 
     const otp = generateOTP();
-    await sendMail(email, 'Event Planner: Registration OTP Verification', `Dear User,
+    await sendMail(
+      email,
+      `Event Planner: ${type} OTP Verification`,
+      `Dear User,
+      
+    Thank you for ${type} with Event Planner. To complete your ${type}, please use the OTP (One-Time Password) provided below:
+    
+    Your OTP code is: [${otp}]
+    
+    Please enter this OTP in the provided field on the ${type} page to verify your email address and complete your ${type} process.
+    
+    **Device Details:**
+    - Device Brand: [${brand}]
+    - Device: [${device}]
+    - Device Model: [${model}]
 
-Thank you for registering with Event Planner. To complete your registration, please use the OTP (One-Time Password) provided below:
+    If you didn't request this OTP, please ignore this email.
+    
+    Thank you,  
+    Event Planner Team
+    `
+    );
 
-Your OTP code is: [${otp}]
-
-Please enter this OTP in the provided field on the registration page to verify your email address and complete your registration process.
-
-If you didn't request this OTP, please ignore this email.
-
-Thank you,
-
-Event Planner Team
-`);
 
 
     let otpRecord = await otpSendAdmin.findOne({ email });
 
     if (otpRecord) {
-
       otpRecord.otp = otp;
       otpRecord.password = password;
       otpRecord.otpExpires = Date.now() + 10 * 60 * 1000;
       await otpRecord.save();
       console.log("Updated OTP:", otpRecord.otp);
     } else {
-
       const newOtpSend = new otpSendAdmin({
         email,
         password,

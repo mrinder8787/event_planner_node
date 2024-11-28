@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 
-
+const { validateRegistration } = require('../middleware/validation');
 const postController = require('../Controller/firstapicontroler');
 const loginController = require('../Controller/loginController');
 const customerEntryController=require('../Controller/customerEntry');
@@ -29,9 +29,10 @@ const crewResignationController = require("../Controller/crewResignController");
 
 router.post('/crewUpdate',crewUpdateController.updateCrewEntry);
 router.post('/paymentAdd',payment.payment),
-router.post('/Owner-registrion',adminRegistrion.registraionApi);
+router.post('/Owner-registration',adminRegistrion.registraionApi);
 router.post('/crewentry',crewEntryController.crewentry);
 router.post('/login',loginController.loginApi);
+router.post("/login-all",validateRegistration,adminRegistrion.ownerloginApi);
 router.post('/customerEntry',customerEntryController.customerentry);
 router.post('/booking',bookingController.booking);
 router.post('/enquiery',postController.enquiery);

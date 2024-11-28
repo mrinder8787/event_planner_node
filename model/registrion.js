@@ -6,15 +6,20 @@ const registraion = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true,
-    lowercase: true,
-    validate: {
-      validator: function (value) {
-        return /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(value);
-      },
-      message: props => `${props.value} is not a valid email address!`,
-    },
-  },
+    lowercase: true,},
   password: {
+    type: String,
+    required: true,
+  },
+  name:{
+    type: String,
+    required: true,
+  },
+  bussinesName:{
+    type: String,
+    required: true,
+  },
+  mobileNumber:{
     type: String,
     required: true,
   },

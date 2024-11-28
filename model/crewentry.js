@@ -92,6 +92,12 @@ const crewentry = new mongoose.Schema({
     type: String,
     required: true,
   },
+  otp:{
+    type: String,
+  },
+  otpExpires:{
+    type: String,
+  },
   resetPasswordOTP: String,
   resetPasswordOTPExpires: Date,
   Jwttoken:String,
