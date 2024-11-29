@@ -209,14 +209,15 @@ exports.adminSendRegistrionMail = async (req, res) => {
   try {
     if (!email || !password) {
       return res.status(400).json({
-        error:true,
-         message: 'Email id is required. & Passowrd' });
+        error: true,
+        message: 'Email id is required. & Passowrd'
+      });
     }
     if (!brand || !device) {
       return res.status(400).json({ error: 'Device details requerd' });
     }
-    const existingUser = await registrionapi.findOne({ email });
-    const crewexistingUser = await crewentry.findOne({ crewEmail: email });
+    const existingUser = await registrionapi.findOne({ email, __v: 0 });
+    const crewexistingUser = await crewentry.findOne({ crewEmail: email, __v: 0 });
     if (crewexistingUser && type === "Login") {
       const passwordMatch = await bcrypt.compare(password, crewexistingUser.crewpassword);
       if (!passwordMatch) {

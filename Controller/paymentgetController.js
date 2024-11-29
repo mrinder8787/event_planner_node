@@ -197,7 +197,7 @@ exports.getAmountbyDate = async (req, res) => {
       const bookingdata = await bookingModel.find({
         customerRef: decodedToken.customerRef
       });
-      if (bookingPay && bookingPay.length > 0) {
+      if (bookingdata) {
         const bookingCount = await bookingModel.countDocuments({ customerRef: decodedToken.customerRef });
         const bookingPayCount = await paymentModel.countDocuments({ customerRef: decodedToken.customerRef });
         const bookingOtherPayCount = await paymentModel.countDocuments({
@@ -291,12 +291,12 @@ exports.getAmountbyDate = async (req, res) => {
 
     const bookingPayment = await paymentModel.find({
       customerRef: decodedToken.customerRef,
-      createdAt: { $gte: start, $lte: end }
+      createdAt: {$gte:start, $lte:end }
     });
 
     console.log("Payment Data:", bookingPayment);
 
-    if (bookingPayment && bookingPayment.length > 0) {
+
       const bookingCount = await bookingModel.countDocuments({
         customerRef: decodedToken.customerRef,
         createdAt: { $gte: start, $lte: end }
@@ -326,12 +326,7 @@ exports.getAmountbyDate = async (req, res) => {
         totalExpensesAmount:totalOtherExpensesAmount[0]?.totalAmount || 0,
         status: status
       });
-    } else {
-      return res.status(404).json({
-        error: true,
-        message: 'No payments found within the given date range',
-      });
-    }
+  
   } catch (e) {
     console.log("Catch error", e.message);
     return res.status(500).json({
