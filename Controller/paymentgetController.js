@@ -110,7 +110,7 @@ exports.getAmountbyBookingId = async (req, res) => {
     const bookingPayment = await paymentModel.find({ bookingid: bookingId });
     const bookingData = await bookingModel.findOne({ bookingId });
 
-    if (bookingPayment && bookingPayment.length > 0) {
+    if (bookingData) {
       const bookingOtherPayCount = await paymentModel.countDocuments({
         customerRef: decodedToken.customerRef, otherExpenses: { $exists: true },bookingid: bookingId
       });
