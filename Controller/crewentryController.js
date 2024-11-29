@@ -31,11 +31,12 @@ const fileFilter = (req, file, cb) => {
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
 
-  if (mimetype && extname) {
-      return cb(null, true);
-  } else {
-      cb(new Error('Only image files are allowed!'));
+  if (!mimetype || !extname) {
+    console.error(`Invalid file type. Received extension: ${path.extname(file.originalname)} and MIME type: ${file.mimetype}`);
+    return cb(new Error('Only image files are allowed!'));
   }
+
+  cb(null, true);
 };
 
 const upload = multer({
