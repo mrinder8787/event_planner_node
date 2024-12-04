@@ -89,7 +89,11 @@ exports.bookingStatusCount = async (req, res) => {
     }
 
     try {
-        const token = authToken.split(' ')[1];
+        const token = authToken?.split(' ')[1];
+        if (!token) {
+            console.log('Token is missing or malformed');
+            return res.status(401).json({ error: true, message: 'Unauthorized: Missing or malformed token' });
+        }
         const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
        
         if (!decodedToken) {
