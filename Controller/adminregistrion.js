@@ -172,7 +172,7 @@ exports.ownerloginApi = async (req, res) => {
           { expiresIn: expiresIn }
         );
 
-        crewexistingUser.jwttoken = token;
+        crewexistingUser.Jwttoken = token;
         await crewexistingUser.save();
         await otpSendAdmin.deleteOne({ email });
         return res.status(200).json({
