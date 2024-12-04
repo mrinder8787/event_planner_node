@@ -19,4 +19,4 @@ customerRef:{
   },
 },{ timestamps: true });
 
-module.exports = mongoose.model('Crew Payments', paymentSchema);
+module.exports = mongoose.model('CrewPayments', paymentSchema);
