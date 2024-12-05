@@ -123,13 +123,13 @@ exports.bookingStatusCount = async (req, res) => {
           let deliverCount;
 
           if(crewMember){
-             totalBookingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef,__v:0,});
+             totalBookingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef,__v:0,crewId:decodedToken.crewid});
              pendingCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Pending',__v:0 ,crewId:decodedToken.crewid});
              successCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Success',__v:0 ,crewId:decodedToken.crewid});
              cancelCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Cancel',__v:0 ,crewId:decodedToken.crewid});
              deliverCount = await bookingData.countDocuments({ customerRef: decodedToken.customerRef, status: 'Deliver',__v:0,crewId:decodedToken.crewid });
             const lastBookingData = await bookingData
-            .findOne({ customerRef: decodedToken.customerRef, __v: 0 })
+            .findOne({ customerRef: decodedToken.customerRef, __v: 0 ,crewId:decodedToken.crewid})
             .sort({ _id: -1 });
             console.log("last booking",lastBookingData);
             return res.status(200).json({
