@@ -4,6 +4,7 @@ const registrionapi = require('../model/registrion');
 const sendMail = require('../Controller/mailController');
 const otpSendAdmin = require('../model/adminotpSendModel');
 const crewentry = require('../model/crewentry');
+const OwnerDelete = require('../model/adminDeleteModel');
 require('dotenv').config();
 
 const generateCustomerRef = () => {
@@ -407,8 +408,15 @@ exports.adminSendRegistrionMail = async (req, res) => {
 
 exports.bussinessOwnerdelete = async (req, res) => {
   const authToken = req.headers.authorization;
+  const { _id } = req.body; 
   if (!authToken) {
-    return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+    return res.status(401).json({ error: true, message: 'Unauthorized' });
+  }
+  if (!_id) {
+    return res.status(400).json({
+      error: true,
+      message: "Owner ID is required."
+    });
   }
   try {
     const token = authToken.split(' ')[1];
@@ -418,23 +426,30 @@ exports.bussinessOwnerdelete = async (req, res) => {
     if (!decodedToken) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
-    const owner = await registrionapi.findOne({ _id: decodedToken.userId, __v: 0 });
-    if (owner) {
-      await registrionapi.findByIdAndUpdate(
-        decodedToken.userId,
-        { __v: 1 },
-        { new: true }
-      );
+    const user = await registrionapi.findOne({ customerRef: decodedToken.customerRef });
+    if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    const ownerToDelete = await registrionapi.findById(_id);
 
-      return res.status(200).json({
-        error: false,
-        message: "Deleted successfully",
+    if (!ownerToDelete) {
+      return res.status(404).json({
+        error: true,
+        message: "Owner not found."
       });
     }
 
-    return res.status(400).json({
-      error: true,
-      message: "Your Account Already Delete"
+  
+    const deletedOwner = new OwnerDelete(ownerToDelete.toObject());
+    await deletedOwner.save();
+    await registrionapi.findByIdAndDelete(_id);
+    return res.status(200).json({
+      error: false,
+      message: "Owner deleted and saved to the delete model successfully.",
+    
     });
 
   } catch (error) {

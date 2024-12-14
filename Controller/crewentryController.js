@@ -3,7 +3,7 @@ const User = require('../model/registrion');
 const crewentry = require('../model/crewentry');
 require('dotenv').config();
 const bcrept = require('bcrypt');
-
+const crewDeleteModel = require('../model/crewDeleteModel');
 
 const multer = require('multer');
 const path = require('path');
@@ -218,3 +218,71 @@ exports.getCrewNamelist = async (req, res) => {
   }
 
 }
+
+
+//---------------------------- Crew Delete ========================================
+
+
+
+exports.crewDelete = async (req, res) => {
+  const authToken = req.headers.authorization;
+  const { _id } = req.body; 
+  if (!authToken) {
+    return res.status(401).json({ error: true, message: 'Unauthorized' });
+  }
+  if (!_id) {
+    return res.status(400).json({
+      error: true,
+      message: "Crew ID is required."
+    });
+  }
+
+  try {
+    const token = authToken.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+
+    if (!decodedToken) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    if (!decodedToken.customerRef) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    if (!decodedToken.userId) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    const user = await User.findOne({ customerRef: decodedToken.customerRef });
+    if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    const crewToDelete = await crewentry.findById(_id);
+
+    if (!crewToDelete) {
+      return res.status(404).json({
+        error: true,
+        message: "Crew member not found."
+      });
+    }
+
+  
+    const deletedCrew = new crewDeleteModel(crewToDelete.toObject());
+    await deletedCrew.save();
+    await crewentry.findByIdAndDelete(_id);
+    return res.status(200).json({
+      error: false,
+      message: "Crew member deleted and saved to the delete model successfully.",
+      data: deletedCrew
+    });
+  } catch (error) {
+    console.log("Catch error", error.message);
+    return res.status(500).json({
+      error: true,
+      message: error.message
+    });
+  }
+};

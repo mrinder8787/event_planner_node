@@ -4,6 +4,7 @@ const crewentry = require('../model/crewentry');
 require('dotenv').config();
 const booking = require('../model/bookingModel');
 const customerEntry = require('../model/customerentryModel');
+const bookingDeleteModel= require('../model/bookingDeleteModel');
 
 exports.booking = async (req, res) => {
   const authToken = req.headers.authorization;
@@ -321,7 +322,7 @@ exports.getBookinglistName = async (req, res) => {
 
 exports.bookingDelete = async (req,res)=>{
   const authToken = req.headers.authorization;
-  const { id } = req.params;
+  const { _id } = req.params;
   if (!authToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
   }
@@ -333,36 +334,40 @@ exports.bookingDelete = async (req,res)=>{
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
 
-    if (!decodedToken.customerRef || !decodedToken.userId) {
+    if (!decodedToken.customerRef) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
 
-    const user = await User.findOne({ customerRef: decodedToken.customerRef });
-    if (user && user.Jwttoken !== token) {
-      return res.status(404).json({ error: true, message: 'User Login Another Device' });
+    if (!decodedToken.userId) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
-    const bookingFind = await booking.findById(id);
-    console.log("booking find ",bookingFind)
-    if(bookingFind.__v===1){
-      return res.status(404).json({ error: true, message: 'Booking not found' }); 
-    }
-    const deleteBooking = await booking.findByIdAndUpdate(
-      id,
-      {__v:1 },
-      { new: true, runValidators: true }
-    );
 
-    if (!deleteBooking) {
-      return res.status(404).json({ error: true, message: 'Booking not found' });
+    const user = await User.findOne({customerRef:decodedToken.customerRef });
+    if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
     }
-   
-    console.log("Booking Delete Successfully",deleteBooking);
+    const bookingToDelete = await booking.findById(_id);
+
+    if (!bookingToDelete) {
+      return res.status(404).json({
+        error: true,
+        message: "Booking not found."
+      });
+    }
+
+  
+    const deletedBooking = new bookingDeleteModel(customerToDelete.toObject());
+    await deletedBooking.save();
+    await booking.findByIdAndDelete(_id);
     return res.status(200).json({
       error: false,
-      message: 'Booking delete successfully',
+      message: "Booking delete successfully."
     });
-
   } catch (error) {
+    console.log("Catch error", error.message);
     return res.status(500).json({
       error: true,
       message: error.message

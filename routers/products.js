@@ -23,7 +23,7 @@ const accountDetails =require('../Controller/accountDetailsController');
 const leaveRequestCrew = require('../Controller/leaveCrewController');
 const CalculateProfitloss= require("../Controller/profitLoss");
 const crewResignationController = require("../Controller/crewResignController");
-
+const userBaseRegistrion = require("../Controller//UserBaseController/userBaseRegController");
 
 //------------------------------------Start Route Post--------------------------------------------
 
@@ -49,18 +49,24 @@ router.post('/leaveRequest-Status',leaveRequestCrew.leaveStatusUpadte);
 router.post('/profit-loss',CalculateProfitloss.profitLoss);
 router.post("/getBookingPayment-Date",paymentGet.getAmountbyDate);
 router.post("/crew-Resignation",crewResignationController.crewResignation);
+router.post("/userBase-genrateOTP",userBaseRegistrion.genrateOTPUser);
+router.post("/userBase-regitrion",userBaseRegistrion.userVerifyOTPLogin);
 
+
+
+router.post('/Crew-Delete',crewEntryController.crewDelete);
+router.post('/bussiness-ownerDelete', adminRegistrion.bussinessOwnerdelete);
+router.post('/customer-delete',customerEntryController.customerDelete);
 //--------------------------------------Put Api Route0---------------------------
 
 router.put("/bookingsUpadte/:id",bookingController.bookingUpdate);
 router.put('/updatecrew-resignation/:resignationId',crewResignationController.updateCrewResignation)
 router.put("/bookingStatusUpadte/:id",bookingController.bookingStatusUpdate);
-router.put("/bookingDelete/:id",bookingController.bookingDelete);
+router.put("/bookingDelete/:_id",bookingController.bookingDelete);
 
 //-------------------------------get Api -----------------------------
 
 router.get("/allItem-Count",allItemCount.allItemCount);
-router.get('/bussiness-ownerDelete', adminRegistrion.bussinessOwnerdelete);
 router.get('/bookinglist',postController.getBookinglist);
 router.get('/customerlist',postController.getCustomerlist);
 router.get('/crewlist',postController.getCrewByCustomerRef);

@@ -6,7 +6,7 @@ const userregistraion = new mongoose.Schema({
       required: true,
       unique: true,
       trim: true, 
-      lowercase: true, // Convert email to lowercase
+      lowercase: true, 
       validate: {
         validator: function (value) {
           // Regular expression for email validation
