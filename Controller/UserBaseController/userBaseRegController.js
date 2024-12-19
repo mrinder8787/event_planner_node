@@ -134,7 +134,7 @@ exports.userVerifyOTPLogin = async (req, res) => {
         if (userExits) {
             const expiresIn = 24 * 60 * 60;
             const token = jwt.sign(
-                { id: userExits._id, mobileNumber:userExits.mobileNumber,userId:userExits.userid},
+                { id: userExits._id,userId:userExits.userid},
                 process.env.ACCESS_SECRET_TOKEN,
                 { expiresIn:expiresIn }
               );
@@ -157,7 +157,7 @@ exports.userVerifyOTPLogin = async (req, res) => {
             const newUserData = await newUser.save();
             const expiresIn = 24 * 60 * 60;
             const token = jwt.sign(
-                { id: newUserData._id, mobileNumber:newUserData.mobileNumber,userId:newUserData.userid},
+                { id: newUserData._id,userId:newUserData.userid},
                 process.env.ACCESS_SECRET_TOKEN,
                 { expiresIn:expiresIn }
               );

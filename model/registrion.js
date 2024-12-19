@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { required } = require('nodemon/lib/config');
 
 const registraion = new mongoose.Schema({
   email: {
@@ -26,7 +27,11 @@ const registraion = new mongoose.Schema({
   resetPasswordOTP: String,
   resetPasswordOTPExpires: Date,
   Jwttoken: String,
-  customerRef: String,
+  customerRef: {
+    type:String,
+    required:true,
+    unique: true,
+  },
   otp: {
     type: String
   }

@@ -18,6 +18,7 @@ const userBaseregistraion = new mongoose.Schema({
  Jwttoken:String,
  userid:{
     type: String,
+    unique: true,
     required:true,
   },
   lastLogin:{
@@ -28,6 +29,6 @@ const userBaseregistraion = new mongoose.Schema({
   type:Boolean,
   default:false 
  }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('UserBaseRegistrions', userBaseregistraion);
