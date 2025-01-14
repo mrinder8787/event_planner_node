@@ -24,8 +24,8 @@ const addBusiness = (req, res) => {
         checkFileSize(req, res, () => {
           console.log('Uploaded file:', req.file);
 
-          const { name, contactNumber, state, city, address, maxBidAmount } = req.body;
-          if (!name || !address) {
+          const { name, contactNumber, state, city, address, maxBidAmount ,businessDescription} = req.body;
+          if (!name || !address ) {
             return res.status(400).json({ error: 'BussinessName and fullAdress are required.' });
           }
 
@@ -38,6 +38,7 @@ const addBusiness = (req, res) => {
             fullAdress: address,
             maxBidAmount: maxBidAmount,
             imageUrl: req.file.path,
+            businessDescription,
             customerRef: decodedToken.customerRef
           });
 

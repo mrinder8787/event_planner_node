@@ -44,7 +44,7 @@ exports.fsmtoken = async (req, res) => {
         const fsmcheck = await fsmTokenModel.findOne({ CustomerRef: decodedToken.customerRef });
 
         if (fsmcheck) {
-            fsmcheck.fsmToken = fsmToken;
+            fsmcheck.fcmToken = fsmToken;
             await fsmcheck.save();
             return res.status(200).json({ error: false, message: 'FSM Token Updated Successfully!', data: [fsmcheck] });
         }

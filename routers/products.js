@@ -29,6 +29,8 @@ const userWishlistController =require("../Controller/UserBaseController/userWish
 const userEventBookController = require('../Controller/UserBaseController/userBookEventController');
 const userAddressController =require("../Controller/UserBaseController/userAddressController");
 const ownerEventController = require("../Controller/UserBaseController/eventbookController");
+const userFcmTokenController = require("../Controller/UserBaseController/usersaveFsmToken");
+
 
 //------------------------------------Start Route Post--------------------------------------------
 
@@ -64,7 +66,7 @@ router.post("/userAdd-address",userAddressController.addUserAddress);
 router.post("/userUpdate-address",userAddressController.updateUserAddress);
 router.post("/eventBook-byowner",ownerEventController.addBookEventOwner);
 router.post("/eventItem-byowner",ownerEventController.addEventItemOwner);
-
+router.post("/userSave-fcmToken",userFcmTokenController.saveuserFcmToken);
 
 
 router.post('/Crew-Delete',crewEntryController.crewDelete);
@@ -92,9 +94,12 @@ router.get('/getleave-request',leaveRequestCrew.getAllrequest);
 router.get("/getBooking-nameId",bookingController.getBookinglistName);
 router.get("/getBookingPayment/:bookingId",paymentGet.getAmountbyBookingId);
 router.get("/getCrew-Resigntion",crewResignationController.getResignData);
+router.get("/getOwnerFcmToken",fsmTokenRoute.getFcmToken);
 router.get("/getBussiness/:_id",bussinessControllerUser.getBussinessByid);
 router.get("/getBussiness-byCity/:city",bussinessControllerUser.getBussinessByCity);
 router.get("/getwishlist-user",userWishlistController.getWishlist);
+router.get("/getOwnerEvent-list",userEventBookController.getOwnerEventList);
+router.get("/getOnewishlist-user/:bussinessId",userWishlistController.getOneWishlist);
 router.get("/removeTo-wishlist/:_id",userWishlistController.removeWishlist);
 router.get("/getUserEvent-list",userEventBookController.getUserEventList);
 router.get("/getuser-address",userAddressController.getUserAddress);
@@ -102,8 +107,9 @@ router.get("/getUserDefaultAddress",userAddressController.getUserDefaultAddress)
 router.get("/userAddress-delete/:_id",userAddressController.userAddressDelete);
 router.get("/getOwner-Event",ownerEventController.getBookEventOwner);
 router.get("/getOwner-Eventitem",ownerEventController.getEventItemOwner);
-
 router.get("/getEventuser/:customerRef",ownerEventController.getBookEventUser);
 router.get("/getEventitemUser/:customerRef",ownerEventController.getEventItemUser);
+router.get("/getUserfcmToken",userFcmTokenController.getuserFcmToken);
+router.get("/getFcmTokenOwnerbyUser/:CustomerRef",fsmTokenRoute.getFcmTokenOwnerbyUser);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const fsmtokenShecma = new mongoose.Schema({
-   fsmToken:{
+   fcmToken:{
     type:String,
     requerd:true,
    },

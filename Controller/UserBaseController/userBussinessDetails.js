@@ -95,18 +95,30 @@ exports.getBussinessByCity = async (req, res) => {
             }
         }
         const businessFind= await addBussiness.find({city});
+        console.log("bussiness data",businessFind);
         if (businessFind.length > 0) {
             return res.status(200).json({
                 error: false,
                 message: "Bussiness fetched successfully!",
                 data: businessFind,
             });
+        } else {
+            const allBussinessFind = await addBussiness.find();
+            if (allBussinessFind.length > 0) {
+                return res.status(200).json({
+                    error: true,
+                    message: "All Bussiness find",
+                    data: allBussinessFind,
+                });
+            } else {
+                return res.status(400).json({
+                    error: true,
+                    message: "Bussiness not find",
+                    data: [],
+                });
+            }
         }
-        return res.status(400).json({
-            error: true,
-            message: "Bussiness not find",
-            data: []
-        });
+       
 
     } catch (error) {
         console.log("Catch error", error.message);

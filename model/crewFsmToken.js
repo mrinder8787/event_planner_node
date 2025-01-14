@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-const fsmtokenShecma = new mongoose.Schema({
-   fsmToken:{
+const fcmtokenShecma = new mongoose.Schema({
+   fcmToken:{
     type:String,
     requerd:true,
    },
@@ -16,4 +16,4 @@ const fsmtokenShecma = new mongoose.Schema({
  
 });
 
-module.exports = mongoose.model('CrewFsmToken', fsmtokenShecma);
+module.exports = mongoose.model('CrewFsmToken', fcmtokenShecma);

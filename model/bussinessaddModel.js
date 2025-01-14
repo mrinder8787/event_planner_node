@@ -30,6 +30,9 @@ const BusinessSchema = new Schema({
     type: String,
     required: true
   },
+  businessDescription: {
+    type: String,
+  },
   customerRef:{
     type:String,
     required: true,
