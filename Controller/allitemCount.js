@@ -5,6 +5,7 @@ const enquieryData = require("../model/enquiryModel");
 const jwt = require('jsonwebtoken'); 
 const User = require('../model/registrion');
 const leaveData = require('../model/leaveRequestCrewModel');
+const userRequest = require("../model/UserModel/userBookEventModel");
 require('dotenv').config();
 
 exports.allItemCount = async (req, res) => {
@@ -59,6 +60,7 @@ exports.allItemCount = async (req, res) => {
         const crewCount = await crewData.countDocuments({ customerRef: decodedToken.customerRef ,__v:0});
         const enquieryCount = await enquieryData.countDocuments({ customerRef: decodedToken.customerRef ,__v:0});
         const customerCount = await customerData.countDocuments({ customerRef: decodedToken.customerRef ,__v:0});
+        const eventRequest = await userRequest.countDocuments({customerRef: decodedToken.customerRef});
         return res.status(200).json({
             error: false,
             message: 'Counts retrieved successfully',
@@ -66,7 +68,8 @@ exports.allItemCount = async (req, res) => {
                 bookingCount,
                 crewCount,
                 enquieryCount,
-                customerCount
+                customerCount,
+                eventRequest
             }
         });
 

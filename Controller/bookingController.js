@@ -5,6 +5,7 @@ require('dotenv').config();
 const booking = require('../model/bookingModel');
 const customerEntry = require('../model/customerentryModel');
 const bookingDeleteModel= require('../model/bookingDeleteModel');
+const businessAddData = require("../model/bussinessaddModel");
 
 exports.booking = async (req, res) => {
   const authToken = req.headers.authorization;
@@ -48,6 +49,36 @@ exports.booking = async (req, res) => {
           if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
             return res.status(400).json({ error: true, message: 'All fields are required' });
           }
+          let transactionType;
+
+          const businessData = await businessAddData.findOne({customerRef:decodedToken.customerRef});
+          console.log("Business State",businessData.state);
+          console.log("Customer State",state);
+          if(businessData.state===state){
+            transactionType="Inter-State";
+          }else{
+            transactionType="Intra-State";
+          }
+          const gstRate ="18";
+          const amount = parseFloat(bookingAmount);
+           const rate = parseFloat(gstRate);
+           if (isNaN(amount) || isNaN(rate)) {
+            return res.status(400).json({ error: 'Invalid numeric values' });
+          }
+      
+          const gstAmount = (amount * rate) / 100;
+          let cgst = 0, sgst = 0, igst = 0;
+      
+          if (transactionType === 'Intra-State') {
+            cgst = gstAmount / 2;
+            sgst = gstAmount / 2;
+          } else if (transactionType === 'Inter-State') {
+            igst = gstAmount;
+          } else {
+            return res.status(400).json({ error: 'Invalid transaction type' });
+          }
+          const totalAmount = amount + gstAmount;
+      
           const bookingId = `BOOK-${Date.now()}`;
           const newBooking = new booking({
             Name,
@@ -65,6 +96,11 @@ exports.booking = async (req, res) => {
             bookingEvent,
             inDate,
             bookingAmount,
+            amountWithgst:totalAmount,
+            cgstAmount:cgst,
+            sgstAmount:sgst,
+            igstAmount:igst,
+            gstAmount:gstAmount,
             advanceAmount,
           });
 
@@ -111,6 +147,37 @@ exports.booking = async (req, res) => {
     if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
       return res.status(400).json({ error: true, message: 'All fields are required' });
     }
+    let transactionType;
+
+    const businessData = await businessAddData.findOne({customerRef:decodedToken.customerRef});
+    console.log("Business State",businessData.state);
+    console.log("Customer State",state);
+    if(businessData.state===state){
+      transactionType="Inter-State";
+    }else{
+      transactionType="Intra-State";
+    }
+
+
+    const gstRate ="18";
+    const amount = parseFloat(bookingAmount);
+     const rate = parseFloat(gstRate);
+     if (isNaN(amount) || isNaN(rate)) {
+      return res.status(400).json({ error: 'Invalid numeric values' });
+    }
+
+    const gstAmount = (amount * rate) / 100;
+    let cgst = 0, sgst = 0, igst = 0;
+
+    if (transactionType === 'Intra-State') {
+      cgst = gstAmount / 2;
+      sgst = gstAmount / 2;
+    } else if (transactionType === 'Inter-State') {
+      igst = gstAmount;
+    } else {
+      return res.status(400).json({ error: 'Invalid transaction type' });
+    }
+    const totalAmount = amount + gstAmount;
 
     const bookingId = `BOOK-${Date.now()}`;
     const newBooking = new booking({
@@ -127,6 +194,11 @@ exports.booking = async (req, res) => {
       bookingEvent,
       inDate,
       bookingAmount,
+      amountWithgst:totalAmount,
+      cgstAmount:cgst,
+      sgstAmount:sgst,
+      igstAmount:igst,
+      gstAmount:gstAmount,
       advanceAmount,
     });
 

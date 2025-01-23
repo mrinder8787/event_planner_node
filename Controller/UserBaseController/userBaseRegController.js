@@ -82,7 +82,7 @@ exports.genrateOTPUser = async (req, res) => {
 }
 
 
-//============================== OTP Verify ======================
+//==============================> OTP Verify <======================
 
 exports.userVerifyOTPLogin = async (req, res) => {
     const { mobileNumber, otp } = req.body;
@@ -173,5 +173,68 @@ exports.userVerifyOTPLogin = async (req, res) => {
 
     } catch (error) {
         console.log("catch Error ", error.message);
+        return res.status(500).json({
+            error:true,
+            message:error.message
+        });
+    }
+}
+
+
+//===========================> User Update Profile <================================
+
+
+exports.userUpdateProfile = async (req, res) => {
+    const authToken = req.headers.authorization;
+    if (!authToken) {
+        return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+    }
+    try {
+        const { name , email } = req.body;
+           const token = authToken.split(' ')[1];
+            const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+            if (!decodedToken) {
+                return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+            }
+    
+            if (!decodedToken.id) {
+    
+                return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+            }
+    
+            if (!decodedToken.userId) {
+    
+                return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+            }
+            const user = await userBase.findOne({ userid: decodedToken.userId, _id: decodedToken.id });
+            if(!user){
+                return res.status(404).json({ error: true, message: 'User not found' });
+            }
+            if (user.Jwttoken) {
+                const userTokenMatch = token === user.Jwttoken;
+                if (!userTokenMatch) {
+                    return res.status(404).json({ error: true, message: 'User Login Another Device' });
+                }
+            }
+            if(user){
+                user.name=name;
+                user.email=email;
+                await user.save();
+                return res.status(200).json({
+                    error:false,
+                    message:"Profile Update"
+                });
+            }
+            return res.status(400).json({
+                error:true,
+                message:"Profile Not Update"
+            });
+
+    } catch (error) {
+        console.log("catch Error ", error.message);
+        return res.status(500).json({
+            error:true,
+            message:error.message
+        });
     }
 }

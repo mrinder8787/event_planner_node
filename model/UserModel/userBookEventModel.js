@@ -9,11 +9,14 @@ const userEventBookModel = new mongoose.Schema({
         required: true,
         type: String
     },
+    bussinessName:{type: String},
+    bussinessLogo:{type: String},
     pinCode: { required: true, type: String },
     state: { required: true, type: String },
     city: { required: true, type: String },
     userOfferAmount: { type: String },
     ownerAmount: { type: String },
+    advanceAmount: { type: String },
     bookingitem: {
         type: [String],
         required: true,
@@ -33,6 +36,10 @@ const userEventBookModel = new mongoose.Schema({
     status: {
         type: String,
         default: "Request Send"
+    },
+    
+    rejectReason: {
+        type: String,
     },
 }, { timestamps: true });
 

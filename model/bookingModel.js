@@ -65,6 +65,26 @@ const bookingShecma = new mongoose.Schema({
     type:String,
     required:true
    },
+   amountWithgst:{
+    type:String,
+    required:true
+   },
+   cgstAmount:{
+    type:String,
+    required:true
+   },
+   sgstAmount:{
+    type:String,
+    required:true
+   },
+   igstAmount:{
+    type:String,
+    required:true
+   },
+   gstAmount:{
+    type:String,
+    required:true
+   },
    advanceAmount:{
     type:String,
     required:true

@@ -22,7 +22,13 @@ const userBaseregistraion = new mongoose.Schema({
  deleted:{
   type:Boolean,
   default:false 
- }
+ },
+ name:{
+  type: String,
+ },
+ email:{
+  type: String,
+ },
 }, { timestamps: true });
 
 module.exports = mongoose.model('UserBaseRegistrions', userBaseregistraion);

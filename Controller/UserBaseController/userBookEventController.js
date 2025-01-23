@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const userEventBook = require("../../model/UserModel/userBookEventModel");
 const ownerData = require("../../model/registrion");
 const userBase = require('../../model/UserModel/userBaseRegisration');
-
+const businessDetails = require("../../model/bussinessaddModel");
 
 
 
@@ -13,7 +13,7 @@ exports.bookEventUser = async (req, res) => {
     }
     try {
         const { bussinessId, customerRef, pinCode, state, city, userOfferAmount,
-            ownerAmount, bookingitem, bookingEvent, eventDate, eventToDate } = req.body;
+            ownerAmount, bookingitem, bookingEvent, eventDate, eventToDate, bussinessName} = req.body;
         const token = authToken.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
         if (!decodedToken) {
@@ -46,8 +46,11 @@ exports.bookEventUser = async (req, res) => {
                 })
             }
         }
+       const businessData = await businessDetails.findOne({customerRef:customerRef,_id:bussinessId})
         const newEventBook = await userEventBook({
             bussinessId,
+            bussinessName:businessData.BussinessName,
+            bussinessLogo:businessData.imageUrl,
             customerRef,
             userId: decodedToken.userId,
             pinCode,
@@ -163,7 +166,7 @@ exports.getOwnerEventList = async (req, res) => {
                 return res.status(404).json({ error: true, message: 'User Login Another Device' });
             }
         }
-        const userEventfind = await userEventBook.findOne({customerRef: decodedToken.customerRef}); 
+        const userEventfind = await userEventBook.find({customerRef: decodedToken.customerRef}); 
           if (userEventfind.length > 0) {
             return res.status(200).json({
                 error: false,
@@ -191,7 +194,7 @@ exports.ownerUpdateEvent = async (req, res) => {
         return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
     }
     try {
-        const { ownerAmount, status,_id} = req.body;
+        const { ownerAmount, status,_id,rejectReason} = req.body;
         const token = authToken.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
 
@@ -217,7 +220,7 @@ exports.ownerUpdateEvent = async (req, res) => {
             }
         }
         const userEventfind = await userEventBook.findOne({_id,customerRef: decodedToken.customerRef});
-        if (userEventfind) {
+        if (userEventfind && !rejectReason) {
             userEventfind.status=status,
             userEventfind.ownerAmount=ownerAmount,
             await userEventfind.save();
@@ -226,7 +229,16 @@ exports.ownerUpdateEvent = async (req, res) => {
                 message: "Status update Successfully !"
             })
         }
-    
+        if(userEventfind && rejectReason){
+            userEventfind.status=status,
+            userEventfind.ownerAmount=ownerAmount,
+            userEventfind.rejectReason=rejectReason,
+            await userEventfind.save();
+            return res.status(200).json({
+                error: false,
+                message: "Rejected Successfully !"
+            })
+        }
         return res.status(200).json({
             error: false,
             message: "Event not find"

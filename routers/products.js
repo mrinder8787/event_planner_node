@@ -30,8 +30,8 @@ const userEventBookController = require('../Controller/UserBaseController/userBo
 const userAddressController =require("../Controller/UserBaseController/userAddressController");
 const ownerEventController = require("../Controller/UserBaseController/eventbookController");
 const userFcmTokenController = require("../Controller/UserBaseController/usersaveFsmToken");
-
-
+const userPaymentAmount = require("../Controller/UserBaseController/advancePaymentController");
+const gstCalculaterController = require("../Controller/gstCalculater");
 //------------------------------------Start Route Post--------------------------------------------
 
 router.post('/crewUpdate',crewUpdateController.updateCrewEntry);
@@ -58,6 +58,7 @@ router.post("/getBookingPayment-Date",paymentGet.getAmountbyDate);
 router.post("/crew-Resignation",crewResignationController.crewResignation);
 router.post("/userBase-genrateOTP",userBaseRegistrion.genrateOTPUser);
 router.post("/userBase-regitrion",userBaseRegistrion.userVerifyOTPLogin);
+router.post("/userprofile-update",userBaseRegistrion.userUpdateProfile);
 router.post("/getBussiness-ids",bussinessControllerUser.getBussinessByIds);
 router.post("/addWishlist-user",userWishlistController.addWishlist);
 router.post("/userBook-Event",userEventBookController.bookEventUser);
@@ -67,8 +68,8 @@ router.post("/userUpdate-address",userAddressController.updateUserAddress);
 router.post("/eventBook-byowner",ownerEventController.addBookEventOwner);
 router.post("/eventItem-byowner",ownerEventController.addEventItemOwner);
 router.post("/userSave-fcmToken",userFcmTokenController.saveuserFcmToken);
-
-
+router.post("/paymentby-user",userPaymentAmount.advancePaymentUser);
+router.post("/calculate-gst",gstCalculaterController.gstCalculater);
 router.post('/Crew-Delete',crewEntryController.crewDelete);
 router.post('/bussiness-ownerDelete', adminRegistrion.bussinessOwnerdelete);
 router.post('/customer-delete',customerEntryController.customerDelete);
@@ -111,5 +112,5 @@ router.get("/getEventuser/:customerRef",ownerEventController.getBookEventUser);
 router.get("/getEventitemUser/:customerRef",ownerEventController.getEventItemUser);
 router.get("/getUserfcmToken",userFcmTokenController.getuserFcmToken);
 router.get("/getFcmTokenOwnerbyUser/:CustomerRef",fsmTokenRoute.getFcmTokenOwnerbyUser);
-
+router.get("/getfcmToken-byowner/:userId",userFcmTokenController.getuserFcmTokenOwner);
 module.exports = router;
