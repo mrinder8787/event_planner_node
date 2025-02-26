@@ -103,9 +103,10 @@ exports.getWishlist = async (req, res) => {
                 data: userWishlistFind,
             })
         }
-        return res.status(200).json({
+        return res.status(400).json({
             error: false,
-            message: "Not wishlist"
+            message: "Not wishlist",
+            data:[]
         })
 
     } catch (error) {
@@ -165,9 +166,10 @@ exports.getOneWishlist = async (req, res) => {
                 data: userWishlistFind,
             })
         }
-        return res.status(200).json({
+        return res.status(400).json({
             error: false,
-            message: "Not wishlist"
+            message: "Not wishlist",
+            data:[]
         })
 
     } catch (error) {

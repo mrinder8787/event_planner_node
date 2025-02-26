@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 
 const userEventBookModel = new mongoose.Schema({
-    bussinessId: { type: String, required: true, unique: true },
+    bussinessId: { type: String, required: true,},
     customerRef: { required: true, type: String },
     userId: {
         required: true,
@@ -16,7 +16,9 @@ const userEventBookModel = new mongoose.Schema({
     city: { required: true, type: String },
     userOfferAmount: { type: String },
     ownerAmount: { type: String },
+    altMobileNumber: { type: String },
     advanceAmount: { type: String },
+    fullAddress:{ type: String},
     bookingitem: {
         type: [String],
         required: true,

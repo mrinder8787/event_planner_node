@@ -1,11 +1,11 @@
 const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
 const registrionapi = require('../model/registrion');
 const crewentry = require('../model/crewentry');
+const sendMail = require('../Controller/mailController');
 require('dotenv').config();
 
 const generateOTP = () => {
-  return Math.floor(1000 + Math.random() * 9000).toString();
+  return Math.floor(100000 + Math.random() * 900000).toString();
 };
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
@@ -32,53 +32,59 @@ exports.forgotPassword = async (req, res) => {
     } else {
       console.log(`User ${email} already has a valid OTP or OTP expiration set.`);
     }
-
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: `"Event Planner Team" <${process.env.EMAIL_USER}>`,
-      to: "anshusingh87873@gmail.com",
-      // to: userFound.email || userFound.crewEmail,
-      subject: 'Event Planner: Password Reset Request',
-      text: `Dear ${userFound.name || userFound.crewName},
+    await sendMail(
+      email,
+      `🔐 Event Planner: Forgot Password OTP Verification`,
+      `
+      <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 20px;">
+          <div style="max-width: 600px; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.1);">
+            <h2 style="color: #1a73e8; text-align: center;">🔐 Event Planner: Forgot Password OTP Verification</h2>
+            <p style="font-size: 16px; color: #555; text-align: center;">
+              We received a request to reset your password. Please use the OTP below to proceed with the password reset process.
+            </p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+              <span style="font-size: 30px; font-weight: bold; color: #ffffff; background-color: #1a73e8; padding: 15px 30px; border-radius: 5px; display: inline-block;">
+                ${otp}
+              </span>
+            </div>
+    
+            <p style="font-size: 16px; color: #555; text-align: center;">
+              🚀 Enter this OTP on the password reset page to change your password.
+            </p>
+    
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+    
+            <p style="font-size: 14px; color: #888; text-align: center;">
+              ❗ If you didn’t request this, please ignore this email. Your account is safe.
+            </p>
+    
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+    
+            <p style="font-size: 16px; color: #555; text-align: center;">
+              Thank you,<br>
+              🌟 <strong>Event Planner Team</strong>
+            </p>
+          </div>
+        </body>
+      </html>
+      `
+    );
+    console.error('Otp :',otp);
+    return res.status(200).json({
+      error:false,
+      message:"Otp Send in your gmail",})
   
-  We received a request to reset your password for your Event Planner account. Please use the following One-Time Password (OTP) to reset your password:
-  
-  Your OTP: ${otp}
-  
-  This OTP is valid for the next 10 minutes. If you did not request a password reset, please ignore this email or contact our support team immediately.
-  
-  Best Regards,
-  Event Planner Team
-  
-  Note: Do not share this OTP with anyone for security reasons.`,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error sending email:', error.message);
-        return res.status(500).json({ error: true, message: 'Error sending email' });
-      } else {
-        console.log('Email sent: ' + info.response);
-        return res.status(200).json({ error: false, message: 'Password reset OTP sent to email' });
-      }
-    });
   } catch (error) {
     console.error('Error:', error.message);
     return res.status(500).json({ error: true, message: 'Internal server error' });
   }
 };
 
-//--------------------------After send Otp Reset Password------------------------------------
-
-exports.resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+//------------------------------Verify OTP --------------------------
+exports.verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
 
   try {
     let userFound = await registrionapi.findOne({ email });
@@ -94,6 +100,28 @@ exports.resetPassword = async (req, res) => {
     const currentTime = new Date();
     if (userFound.resetPasswordOTP !== otp || currentTime > userFound.resetPasswordOTPExpires) {
       return res.status(400).json({ error: true, message: 'Invalid or expired OTP' });
+    }
+    return res.status(200).json({ error: false, message: 'OTP verified successfully' });
+  } catch (error) {
+    console.error('Error:', error.message);
+    return res.status(500).json({ error: true, message: 'Internal server error' });
+  }
+};
+
+//--------------------------After send Otp Reset Password------------------------------------
+
+exports.resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    let userFound = await registrionapi.findOne({ email });
+
+    if (!userFound) {
+      userFound = await crewentry.findOne({ crewEmail: email });
+    }
+
+    if (!userFound) {
+      return res.status(404).json({ error: true, message: 'User not found' });
     }
 
     const salt = await bcrypt.genSalt(10);

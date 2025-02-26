@@ -44,7 +44,7 @@ exports.booking = async (req, res) => {
         if (crewFound.canAddBooking === false) {
           return res.status(403).json({ error: true, message: 'Permission denied: Crew member cannot add booking' });
         } else {
-          const { Name, Number, Email, altContact, bookingitem, address, state, city, bookingEvent, inDate, bookingAmount, advanceAmount } = req.body;
+          const { Name, Number, Email, altContact, bookingitem, address, state, city, bookingEvent, inDate, bookingAmount, advanceAmount,userid } = req.body;
 
           if (!Name || !Number || !Email || !altContact || !bookingitem || !address || !state || !city) {
             return res.status(400).json({ error: true, message: 'All fields are required' });
@@ -102,6 +102,7 @@ exports.booking = async (req, res) => {
             igstAmount:igst,
             gstAmount:gstAmount,
             advanceAmount,
+            userId:userid,
           });
 
           await newBooking.save();
@@ -200,6 +201,7 @@ exports.booking = async (req, res) => {
       igstAmount:igst,
       gstAmount:gstAmount,
       advanceAmount,
+      userId
     });
 
     await newBooking.save();

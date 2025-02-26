@@ -12,7 +12,7 @@ const crewUpdateController =require('../Controller/crewUpdateController');
 const userRegistrion =require('../Controller/userRegController');
 const passChange= require('../Controller/passwordChangeControl');
 const forgotPassword =require('../Controller/forgatePassController');
-const addBussiness = require('../Controller/bussinessController');
+const addBussinessController = require('../Controller/bussinessController');
 const adminRegistrion = require('../Controller/adminregistrion');
 const fsmTokenRoute = require('../Controller/fsmtokenController');
 const getbussiness =require('../ControllergetApi/getBussiness');
@@ -32,8 +32,15 @@ const ownerEventController = require("../Controller/UserBaseController/eventbook
 const userFcmTokenController = require("../Controller/UserBaseController/usersaveFsmToken");
 const userPaymentAmount = require("../Controller/UserBaseController/advancePaymentController");
 const gstCalculaterController = require("../Controller/gstCalculater");
+const { validateQuotation } = require("../middleware/quotationMiddleware");
+const quotationController = require("../Controller/quotationController");
+const sendQuotationEmail = require("../Controller/quotationMailController");
+const upload = require("../middleware/quotationPdf");
+
 //------------------------------------Start Route Post--------------------------------------------
 
+router.post("/quotation-send-email", upload.single("pdfPath"), sendQuotationEmail.sendQuotationEmail);
+router.post("/create-Quotation", validateQuotation, quotationController.createQuotation);
 router.post('/crewUpdate',crewUpdateController.updateCrewEntry);
 router.post('/paymentAdd',payment.payment),
 router.post('/Owner-registration',adminRegistrion.registraionApi);
@@ -46,8 +53,9 @@ router.post('/enquiery',postController.enquiery);
 router.post('/userRegitrion',userRegistrion.userRegistrion);
 router.post('/passwordchange',passChange.passwordchange);
 router.post('/forgatepassword',forgotPassword.forgotPassword);
+router.post('/forgatepassword-otpverfiy',forgotPassword.verifyOtp);
 router.post('/Resetpassword',forgotPassword.resetPassword);
-router.post('/addbussiness',addBussiness.addBusiness);
+router.post('/addbussiness',addBussinessController.addBusiness);
 router.post('/OwnerSend-OTP',adminRegistrion.adminSendRegistrionMail);
 router.post("/Owner-fsmToken",fsmTokenRoute.fsmtoken);
 router.post("/Owner-accountDetails-save",accountDetails.accountDetails);
@@ -62,6 +70,7 @@ router.post("/userprofile-update",userBaseRegistrion.userUpdateProfile);
 router.post("/getBussiness-ids",bussinessControllerUser.getBussinessByIds);
 router.post("/addWishlist-user",userWishlistController.addWishlist);
 router.post("/userBook-Event",userEventBookController.bookEventUser);
+router.post("/ownerBook-Eventforuser",userEventBookController.bookEventbyOwnerforUser);
 router.post("/ownerUpdate-status",userEventBookController.ownerUpdateEvent);
 router.post("/userAdd-address",userAddressController.addUserAddress);
 router.post("/userUpdate-address",userAddressController.updateUserAddress);
@@ -70,16 +79,20 @@ router.post("/eventItem-byowner",ownerEventController.addEventItemOwner);
 router.post("/userSave-fcmToken",userFcmTokenController.saveuserFcmToken);
 router.post("/paymentby-user",userPaymentAmount.advancePaymentUser);
 router.post("/calculate-gst",gstCalculaterController.gstCalculater);
+router.post("/noticationsend-event",gstCalculaterController.sendNotification);
+router.post("/getBusiness",addBussinessController.getBusinessUser);
 router.post('/Crew-Delete',crewEntryController.crewDelete);
 router.post('/bussiness-ownerDelete', adminRegistrion.bussinessOwnerdelete);
 router.post('/customer-delete',customerEntryController.customerDelete);
+
+
 //--------------------------------------Put Api Route0---------------------------
 
 router.put("/bookingsUpadte/:id",bookingController.bookingUpdate);
 router.put('/updatecrew-resignation/:resignationId',crewResignationController.updateCrewResignation)
 router.put("/bookingStatusUpadte/:id",bookingController.bookingStatusUpdate);
 router.put("/bookingDelete/:_id",bookingController.bookingDelete);
-
+router.put("updateQuoation/:id", validateQuotation,quotationController.updateQuotation);
 //-------------------------------get Api -----------------------------
 
 router.get("/allItem-Count",allItemCount.allItemCount);
@@ -101,6 +114,7 @@ router.get("/getBussiness-byCity/:city",bussinessControllerUser.getBussinessByCi
 router.get("/getwishlist-user",userWishlistController.getWishlist);
 router.get("/getOwnerEvent-list",userEventBookController.getOwnerEventList);
 router.get("/getOnewishlist-user/:bussinessId",userWishlistController.getOneWishlist);
+router.get("/getUserProfile-owner/:userId",userBaseRegistrion.userFindProfileOwner);
 router.get("/removeTo-wishlist/:_id",userWishlistController.removeWishlist);
 router.get("/getUserEvent-list",userEventBookController.getUserEventList);
 router.get("/getuser-address",userAddressController.getUserAddress);
@@ -113,4 +127,12 @@ router.get("/getEventitemUser/:customerRef",ownerEventController.getEventItemUse
 router.get("/getUserfcmToken",userFcmTokenController.getuserFcmToken);
 router.get("/getFcmTokenOwnerbyUser/:CustomerRef",fsmTokenRoute.getFcmTokenOwnerbyUser);
 router.get("/getfcmToken-byowner/:userId",userFcmTokenController.getuserFcmTokenOwner);
+router.get("/userGetData",userBaseRegistrion.userFindProfile);
+router.get("/getBusinessOwner",addBussinessController.getBusinessOwner);
+router.get("/getOwnerProfile",addBussinessController.getBusinessOwnerProfile);
+router.get("/getAllQuotations", quotationController.getAllQuotations);
+router.get("/getQuotations/:id", quotationController.getQuotationById);
+
+router.delete("/deleteQuotation/:id", quotationController.deleteQuotation);
+
 module.exports = router;

@@ -1,8 +1,12 @@
 const Business = require('../model/bussinessaddModel');
 const jwt = require('jsonwebtoken');
+const OwnerData = require('../model/registrion');
 const { upload, checkFileSize } = require('../middleware/upload');
+const userBase = require("../model/UserModel/userBaseRegisration");
 
-const addBusiness = (req, res) => {
+
+
+exports.addBusiness = (req, res) => {
   const authToken = req.headers.authorization;
 
   if (!authToken) {
@@ -24,8 +28,8 @@ const addBusiness = (req, res) => {
         checkFileSize(req, res, () => {
           console.log('Uploaded file:', req.file);
 
-          const { name, contactNumber, state, city, address, maxBidAmount ,businessDescription} = req.body;
-          if (!name || !address ) {
+          const {pinCode, name, contactNumber, state, city, address,GSTNo, maxBidAmount, businessDescription } = req.body;
+          if (!name || !address,!pinCode) {
             return res.status(400).json({ error: 'BussinessName and fullAdress are required.' });
           }
 
@@ -39,7 +43,9 @@ const addBusiness = (req, res) => {
             maxBidAmount: maxBidAmount,
             imageUrl: req.file.path,
             businessDescription,
-            customerRef: decodedToken.customerRef
+            GSTNo,
+            customerRef: decodedToken.customerRef,
+            pinCode,
           });
 
           newBusiness.save()
@@ -56,6 +62,186 @@ const addBusiness = (req, res) => {
 };
 
 
-module.exports = {
-  addBusiness
-};
+
+
+//------------------------------- >Get Business Details <-------------------------------
+
+
+exports.getBusinessUser = async (req, res) => {
+  const authToken = req.headers.authorization;
+  if (!authToken) {
+    return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+  }
+  try {
+    const {customerRef}=req.body;
+    const token = authToken.split(' ')[1];
+    const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+    if (!decodedToken) {
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    if (!decodedToken.id) {
+
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+
+    if (!decodedToken.userId) {
+
+      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+    }
+    const user = await userBase.findOne({ userid: decodedToken.userId, _id: decodedToken.id });
+    if (!user) {
+      return res.status(404).json({ error: true, message: 'User not found' });
+    }
+    if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    const businessData = await Business.findOne({customerRef});
+    if(!businessData){
+      return res.status(400).json({
+        error:true,
+        message:"Business not find"
+      });
+    }
+
+    return res.status(200).json({
+      error:false,
+      message:"Business find successfully ",
+      data:businessData
+    })
+
+
+  } catch (e) {
+    return res.status(500).json({
+      error: true,
+      message: e.message
+    });
+  }
+}
+
+//------------------------------- >Get Business Details <-------------------------------
+
+
+exports.getBusinessOwner = async (req, res) => {
+  const authToken = req.headers.authorization;
+  if (!authToken) {
+    return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+  }
+  try {
+  const token = authToken.split(' ')[1];
+      const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+  
+      if (!decodedToken) {
+  
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+  
+      if (!decodedToken.customerRef) {
+  
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+  
+      if (!decodedToken.userId) {
+  
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+
+    const user = await OwnerData.findOne({customerRef:decodedToken.customerRef});
+    if (!user) {
+      return res.status(404).json({ error: true, message: 'User not found' });
+    }
+    if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    const businessData = await Business.findOne({customerRef:decodedToken.customerRef});
+    if(!businessData){
+      return res.status(400).json({
+        error:true,
+        message:"Business not find"
+      });
+    }
+
+    return res.status(200).json({
+      error:false,
+      message:"Business find successfully ",
+      data:businessData
+    })
+
+
+  } catch (e) {
+    return res.status(500).json({
+      error: true,
+      message: e.message
+    });
+  }
+}
+
+
+//==========================> Get Business Owner Profile <==============================
+
+
+exports.getBusinessOwnerProfile = async (req, res) => {
+  const authToken = req.headers.authorization;
+  if (!authToken) {
+    return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+  }
+  try {
+  const token = authToken.split(' ')[1];
+      const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+  
+      if (!decodedToken) {
+  
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+  
+      if (!decodedToken.customerRef) {
+  
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+  
+      if (!decodedToken.userId) {
+  
+        return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+      }
+
+    const user = await OwnerData.findOne({customerRef:decodedToken.customerRef});
+    if (!user) {
+      return res.status(404).json({ error: true, message: 'User not found' });
+    }
+    if (user.Jwttoken) {
+      const userTokenMatch = token === user.Jwttoken;
+      if (!userTokenMatch) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
+      }
+    }
+    const businessData = await Business.findOne({ customerRef: decodedToken.customerRef }) || {};
+    return res.status(200).json({
+      error: false,
+      message: "Owner Profile Found successfully",
+      data: {
+        ownerRegName: user.name,
+        ownerRegMobileNumber: user.mobileNumber,
+        ownerRegEmail: user.email,
+        businessName: businessData.BussinessName ?? "",
+        businessContNumber: businessData.contactNumber ??  "",
+        businessState: businessData.state ??  "",
+        businessCity: businessData.city ??  "",
+        businessfullAdress: businessData.fullAdress ??  "",
+        businessGSTNo: businessData.GSTNo ??  "",
+        joinDate: user.createdAt ??  ""
+      }
+    });
+
+  } catch (e) {
+    return res.status(500).json({
+      error: true,
+      message: e.message
+    });
+  }
+}

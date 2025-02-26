@@ -230,26 +230,44 @@ exports.adminSendRegistrionMail = async (req, res) => {
 
       const otp = generateOTP();
       await sendMail(
-        email,
-        `Event Planner: ${type} OTP Verification`,
-        `Dear User,
-      
-    Thank you for ${type} with Event Planner. To complete your ${type}, please use the OTP (One-Time Password) provided below:
-    
-    Your OTP code is: [${otp}]
-    
-    Please enter this OTP in the provided field on the ${type} page to verify your email address and complete your ${type} process.
-    
-    **Device Details:**
-    - Device Brand: [${brand}]
-    - Device: [${device}]
-    - Device Model: [${model}]
-
-    If you didn't request this OTP, please ignore this email.
-    
-    Thank you,  
-    Event Planner Team
-    `
+        email, 
+        `🔐 Event Planner: ${type} OTP Verification`,
+        `
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1);">
+              <h2 style="color: #007bff; text-align: center;">🔐 Event Planner: ${type} OTP Verification</h2>
+              <p style="font-size: 16px; color: #333;">Dear User,</p>
+              <p style="font-size: 16px; color: #333;">
+                Thank you for choosing <strong>Event Planner</strong>! To complete your <strong>${type}</strong>, please use the following <strong>One-Time Password (OTP)</strong>:
+              </p>
+              <div style="text-align: center; margin: 20px 0;">
+                <span style="font-size: 24px; font-weight: bold; color: #007bff; background: #f1f1f1; padding: 10px 20px; border-radius: 5px; display: inline-block;">
+                  ${otp}
+                </span>
+              </div>
+              <p style="font-size: 16px; color: #333; text-align: center;">
+                🚀 Please enter this OTP on the <strong>${type}</strong> page to verify your email and continue.
+              </p>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+              <h3 style="color: #007bff;">📱 Device Details:</h3>
+              <ul style="font-size: 16px; color: #333;">
+                <li><strong>Brand:</strong> ${brand}</li>
+                <li><strong>Device:</strong> ${device}</li>
+                <li><strong>Model:</strong> ${model}</li>
+              </ul>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+              <p style="font-size: 14px; color: #888;">
+                ❗ <strong>If you did not request this OTP, please ignore this email.</strong> Your account remains secure.
+              </p>
+              <p style="font-size: 16px; text-align: center; color: #333;">
+                Thank you,<br>
+                🌟 <strong>Event Planner Team</strong>
+              </p>
+            </div>
+          </body>
+        </html>
+        `
       );
       let otpRecord = await otpSendAdmin.findOne({ email });
       if (otpRecord) {
@@ -280,7 +298,7 @@ exports.adminSendRegistrionMail = async (req, res) => {
     if (!existingUser && type === "Login") {
       return res.status(400).json({
         error: true,
-        message: 'Please signup',
+        message: 'Please signUp',
       });
     }
     if (existingUser) {
@@ -294,30 +312,46 @@ exports.adminSendRegistrionMail = async (req, res) => {
       }
       const otp = generateOTP();
       await sendMail(
-        email,
-        `Event Planner: ${type} OTP Verification`,
-        `Dear User,
-      
-    Thank you for ${type} with Event Planner. To complete your ${type}, please use the OTP (One-Time Password) provided below:
-    
-    Your OTP code is: [${otp}]
-    
-    Please enter this OTP in the provided field on the ${type} page to verify your email address and complete your ${type} process.
-    
-    **Device Details:**
-    - Device Brand: [${brand}]
-    - Device: [${device}]
-    - Device Model: [${model}]
-
-    If you didn't request this OTP, please ignore this email.
-    
-    Thank you,  
-    Event Planner Team
-    `
+        email, 
+        `🔐 Event Planner: ${type} OTP Verification`,
+        `
+        <html>
+          <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1);">
+              <h2 style="color: #007bff; text-align: center;">🔐 Event Planner: ${type} OTP Verification</h2>
+              <p style="font-size: 16px; color: #333;">Dear User,</p>
+              <p style="font-size: 16px; color: #333;">
+                Thank you for choosing <strong>Event Planner</strong>! To complete your <strong>${type}</strong>, please use the following <strong>One-Time Password (OTP)</strong>:
+              </p>
+              <div style="text-align: center; margin: 20px 0;">
+                <span style="font-size: 24px; font-weight: bold; color: #007bff; background: #f1f1f1; padding: 10px 20px; border-radius: 5px; display: inline-block;">
+                  ${otp}
+                </span>
+              </div>
+              <p style="font-size: 16px; color: #333; text-align: center;">
+                🚀 Please enter this OTP on the <strong>${type}</strong> page to verify your email and continue.
+              </p>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+              <h3 style="color: #007bff;">📱 Device Details:</h3>
+              <ul style="font-size: 16px; color: #333;">
+                <li><strong>Brand:</strong> ${brand}</li>
+                <li><strong>Device:</strong> ${device}</li>
+                <li><strong>Model:</strong> ${model}</li>
+              </ul>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+              <p style="font-size: 14px; color: #888;">
+                ❗ <strong>If you did not request this OTP, please ignore this email.</strong> Your account remains secure.
+              </p>
+              <p style="font-size: 16px; text-align: center; color: #333;">
+                Thank you,<br>
+                🌟 <strong>Event Planner Team</strong>
+              </p>
+            </div>
+          </body>
+        </html>
+        `
       );
-
-
-
+      
       let otpRecord = await otpSendAdmin.findOne({ email });
 
       if (otpRecord) {
@@ -345,30 +379,45 @@ exports.adminSendRegistrionMail = async (req, res) => {
 
     const otp = generateOTP();
     await sendMail(
-      email,
-      `Event Planner: ${type} OTP Verification`,
-      `Dear User,
-      
-    Thank you for ${type} with Event Planner. To complete your ${type}, please use the OTP (One-Time Password) provided below:
-    
-    Your OTP code is: [${otp}]
-    
-    Please enter this OTP in the provided field on the ${type} page to verify your email address and complete your ${type} process.
-    
-    **Device Details:**
-    - Device Brand: [${brand}]
-    - Device: [${device}]
-    - Device Model: [${model}]
-
-    If you didn't request this OTP, please ignore this email.
-    
-    Thank you,  
-    Event Planner Team
-    `
+      email, 
+      `🔐 Event Planner: ${type} OTP Verification`,
+      `
+      <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+          <div style="max-width: 600px; background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1);">
+            <h2 style="color: #007bff; text-align: center;">🔐 Event Planner: ${type} OTP Verification</h2>
+            <p style="font-size: 16px; color: #333;">Dear User,</p>
+            <p style="font-size: 16px; color: #333;">
+              Thank you for choosing <strong>Event Planner</strong>! To complete your <strong>${type}</strong>, please use the following <strong>One-Time Password (OTP)</strong>:
+            </p>
+            <div style="text-align: center; margin: 20px 0;">
+              <span style="font-size: 24px; font-weight: bold; color: #007bff; background: #f1f1f1; padding: 10px 20px; border-radius: 5px; display: inline-block;">
+                ${otp}
+              </span>
+            </div>
+            <p style="font-size: 16px; color: #333; text-align: center;">
+              🚀 Please enter this OTP on the <strong>${type}</strong> page to verify your email and continue.
+            </p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <h3 style="color: #007bff;">📱 Device Details:</h3>
+            <ul style="font-size: 16px; color: #333;">
+              <li><strong>Brand:</strong> ${brand}</li>
+              <li><strong>Device:</strong> ${device}</li>
+              <li><strong>Model:</strong> ${model}</li>
+            </ul>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 14px; color: #888;">
+              ❗ <strong>If you did not request this OTP, please ignore this email.</strong> Your account remains secure.
+            </p>
+            <p style="font-size: 16px; text-align: center; color: #333;">
+              Thank you,<br>
+              🌟 <strong>Event Planner Team</strong>
+            </p>
+          </div>
+        </body>
+      </html>
+      `
     );
-
-
-
     let otpRecord = await otpSendAdmin.findOne({ email });
 
     if (otpRecord) {
@@ -394,6 +443,7 @@ exports.adminSendRegistrionMail = async (req, res) => {
     });
 
   } catch (err) {
+    console.log("catch error : ",err.message);
     return res.status(500).json({
       error: true,
       message: err.message

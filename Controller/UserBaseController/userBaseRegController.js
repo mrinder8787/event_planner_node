@@ -1,5 +1,6 @@
 const userBase = require('../../model/UserModel/userBaseRegisration');
 const userOtp = require('../../model/UserModel/userSaveOtpModel');
+const ownerData = require("../../model/registrion");
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -9,10 +10,10 @@ const generateOtp = () => {
 
 const generateUserId = () => {
     return `User_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-  };
-  
-  console.log(generateUserId());
-  
+};
+
+console.log(generateUserId());
+
 
 exports.genrateOTPUser = async (req, res) => {
     const { mobileNumber } = req.body;
@@ -134,35 +135,35 @@ exports.userVerifyOTPLogin = async (req, res) => {
         if (userExits) {
             const expiresIn = 24 * 60 * 60;
             const token = jwt.sign(
-                { id: userExits._id,userId:userExits.userid},
+                { id: userExits._id, userId: userExits.userid },
                 process.env.ACCESS_SECRET_TOKEN,
-                { expiresIn:expiresIn }
-              );
-              userExits.Jwttoken=token;
-              userExits.lastLogin=Date();
-              await userExits.save();
-              return res.status(200).json({
+                { expiresIn: expiresIn }
+            );
+            userExits.Jwttoken = token;
+            userExits.lastLogin = Date();
+            await userExits.save();
+            return res.status(200).json({
                 error: false,
                 message: 'Login successfully',
                 data: userExits
             });
         }
         if (!userExits) {
-           const userId = generateUserId();
+            const userId = generateUserId();
             const newUser = new userBase({
                 mobileNumber,
-                userid:userId,
+                userid: userId,
                 lastLogin: Date()
             });
             const newUserData = await newUser.save();
             const expiresIn = 24 * 60 * 60;
             const token = jwt.sign(
-                { id: newUserData._id,userId:newUserData.userid},
+                { id: newUserData._id, userId: newUserData.userid },
                 process.env.ACCESS_SECRET_TOKEN,
-                { expiresIn:expiresIn }
-              );
-              newUserData.Jwttoken=token;
-              await newUserData.save();
+                { expiresIn: expiresIn }
+            );
+            newUserData.Jwttoken = token;
+            await newUserData.save();
 
             return res.status(200).json({
                 error: false,
@@ -174,8 +175,8 @@ exports.userVerifyOTPLogin = async (req, res) => {
     } catch (error) {
         console.log("catch Error ", error.message);
         return res.status(500).json({
-            error:true,
-            message:error.message
+            error: true,
+            message: error.message
         });
     }
 }
@@ -190,51 +191,162 @@ exports.userUpdateProfile = async (req, res) => {
         return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
     }
     try {
-        const { name , email } = req.body;
-           const token = authToken.split(' ')[1];
-            const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
-            if (!decodedToken) {
-                return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        const { name, email } = req.body;
+        const token = authToken.split(' ')[1];
+        const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+        if (!decodedToken) {
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+
+        if (!decodedToken.id) {
+
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+
+        if (!decodedToken.userId) {
+
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+        const user = await userBase.findOne({ userid: decodedToken.userId, _id: decodedToken.id });
+        if (!user) {
+            return res.status(404).json({ error: true, message: 'User not found' });
+        }
+        if (user.Jwttoken) {
+            const userTokenMatch = token === user.Jwttoken;
+            if (!userTokenMatch) {
+                return res.status(404).json({ error: true, message: 'User Login Another Device' });
             }
-    
-            if (!decodedToken.id) {
-    
-                return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-            }
-    
-            if (!decodedToken.userId) {
-    
-                return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-            }
-            const user = await userBase.findOne({ userid: decodedToken.userId, _id: decodedToken.id });
-            if(!user){
-                return res.status(404).json({ error: true, message: 'User not found' });
-            }
-            if (user.Jwttoken) {
-                const userTokenMatch = token === user.Jwttoken;
-                if (!userTokenMatch) {
-                    return res.status(404).json({ error: true, message: 'User Login Another Device' });
-                }
-            }
-            if(user){
-                user.name=name;
-                user.email=email;
-                await user.save();
-                return res.status(200).json({
-                    error:false,
-                    message:"Profile Update"
-                });
-            }
-            return res.status(400).json({
-                error:true,
-                message:"Profile Not Update"
+        }
+        if (user) {
+            user.name = name;
+            user.email = email;
+            await user.save();
+            return res.status(200).json({
+                error: false,
+                message: "Profile Update"
             });
+        }
+        return res.status(400).json({
+            error: true,
+            message: "Profile Not Update"
+        });
 
     } catch (error) {
         console.log("catch Error ", error.message);
         return res.status(500).json({
-            error:true,
-            message:error.message
+            error: true,
+            message: error.message
+        });
+    }
+}
+
+
+
+//===========================> User find Profile <================================
+
+
+exports.userFindProfile = async (req, res) => {
+    const authToken = req.headers.authorization;
+    if (!authToken) {
+        return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+    }
+    try {
+        const token = authToken.split(' ')[1];
+        const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+        if (!decodedToken) {
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+
+        if (!decodedToken.id) {
+
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+
+        if (!decodedToken.userId) {
+
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+        const user = await userBase.findOne({ userid: decodedToken.userId, _id: decodedToken.id });
+        if (!user) {
+            return res.status(404).json({ error: true, message: 'User not found' });
+        }
+        if (user.Jwttoken) {
+            const userTokenMatch = token === user.Jwttoken;
+            if (!userTokenMatch) {
+                return res.status(404).json({ error: true, message: 'User Login Another Device' });
+            }
+        }
+        if (user) {
+            return res.status(200).json({
+                error: true,
+                message: "User find ",
+                data: user
+            });
+        }
+
+
+    } catch (error) {
+        console.log("catch Error ", error.message);
+        return res.status(500).json({
+            error: true,
+            message: error.message
+        });
+    }
+}
+
+
+//===========================> User find Profile Owner <================================
+
+exports.userFindProfileOwner = async (req, res) => {
+    const authToken = req.headers.authorization;
+    const userId = req.params.userId;
+    if (!authToken) {
+        return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
+    }
+    try {
+        const token = authToken.split(' ')[1];
+        const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
+
+        if (!decodedToken) {
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+
+        if (!decodedToken.customerRef) {
+
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+
+        if (!decodedToken.userId) {
+
+            return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
+        }
+        const owner = await ownerData.findOne({ customerRef: decodedToken.customerRef });
+
+        if (owner.Jwttoken) {
+            const userTokenMatch = token === owner.Jwttoken;
+            if (!userTokenMatch) {
+                return res.status(404).json({ error: true, message: 'User Login Another Device' });
+            }
+        }
+        const user = await userBase.findOne({ userid: userId, });
+        if (!user) {
+            return res.status(404).json({ error: true, message: 'User not found' });
+        }
+
+        if (user) {
+            return res.status(200).json({
+                error: true,
+                message: "User find ",
+                data: user
+            });
+        }
+
+
+    } catch (error) {
+        console.log("catch Error ", error.message);
+        return res.status(500).json({
+            error: true,
+            message: error.message
         });
     }
 }

@@ -64,13 +64,21 @@ exports.addBookEventOwner = async (req, res) => {
     }
 }
 //=====================================Event Item Save ==========================================
+
 exports.addEventItemOwner = async (req, res) => {
     const authToken = req.headers.authorization;
     if (!authToken) {
         return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
     }
     try {
-        const { eventItem } = req.body;
+        const { eventItem, itemPrice } = req.body;
+
+        if (!eventItem || !itemPrice) {
+            return res.status(400).json({
+                error: true,
+                message: 'Invalid input: eventItem and itemPrice are required',
+            });
+        }
 
         const token = authToken.split(' ')[1];
         const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
@@ -79,14 +87,13 @@ exports.addEventItemOwner = async (req, res) => {
         }
 
         if (!decodedToken.customerRef) {
-
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
 
         if (!decodedToken.userId) {
-
             return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
         }
+
         const user = await adminUser.findOne({ customerRef: decodedToken.customerRef });
 
         if (user.Jwttoken) {
@@ -95,33 +102,41 @@ exports.addEventItemOwner = async (req, res) => {
                 return res.status(404).json({ error: true, message: 'User Login Another Device' });
             }
         }
+
         const adminEventItemfind = await eventItemModel.findOne({ customerRef: decodedToken.customerRef });
         if (adminEventItemfind) {
             return res.status(400).json({
                 error: true,
-                message: "Your Item Already Save Please Update"
-            })
+                message: 'Your item is already saved. Please update it.',
+            });
         }
+
+        // Map eventItem and itemPrice into an array of objects
+        const eventItemsWithPrices = eventItem.map((item, index) => ({
+            name: item,
+            price: itemPrice[index],
+        }));
+
         const newEventBook = await eventItemModel({
-            eventItem,
+            eventItem: eventItemsWithPrices, 
             customerRef: decodedToken.customerRef,
         });
         await newEventBook.save();
 
         return res.status(200).json({
             error: false,
-            message: "Item Save Successfully !",
-            data: newEventBook
-        })
-
+            message: 'Item saved successfully!',
+            data: newEventBook,
+        });
     } catch (error) {
-        console.log("Catch error", error.message);
+        console.log('Catch error', error.message);
         return res.status(500).json({
             error: true,
-            message: error.message
-        })
+            message: error.message,
+        });
     }
-}
+};
+
 
 //===================================== Get Event Item Owner ==========================================
 

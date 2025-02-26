@@ -2,3 +2,7 @@ node_modules
 .env
 crewImage
 uploads
+quotaionPdf
+Services
+Controller/pgNotification.js
+Controller/gstCalculater.js

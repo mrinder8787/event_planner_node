@@ -73,31 +73,39 @@ exports.getCustomerlist = async (req, res) => {
   }
 
   try {
-
     const token = authToken.split(' ')[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
 
-    console.log('decoded token', decodedToken);
-    if (decodedToken.userid === null || decodedToken.customerRef === null) {
+    if (!decodedToken || !decodedToken.customerRef) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
+
     const user = await User.findOne({ customerRef: decodedToken.customerRef });
+
     if (decodedToken.crewid) {
       const crewToken = await crewentry.findOne({ crewid: decodedToken.crewid, customerRef: decodedToken.customerRef });
-      if (crewToken.Jwttoken) {
-        const crewTokenMatch = token === crewToken.Jwttoken;
-        if (!crewTokenMatch) {
-          return res.status(404).json({ error: true, message: 'User Login Another Device' });
-        }
+      if (crewToken?.Jwttoken && token !== crewToken.Jwttoken) {
+        return res.status(404).json({ error: true, message: 'User Login Another Device' });
       }
-      const customerCrewEntries = await customerEntry.find({
-        customerRef: decodedToken.customerRef,
-        crewId: decodedToken.crewid,
-        __v: 0,
-      });
+
+      // Pagination setup
+      let page = parseInt(req.query.page) || 1;
+      let limit = 10;
+      let skip = (page - 1) * limit;
+
+      const totalRecords = await customerEntry.countDocuments({ customerRef: decodedToken.customerRef, crewId: decodedToken.crewid });
+      const customerCrewEntries = await customerEntry.find({ customerRef: decodedToken.customerRef, crewId: decodedToken.crewid })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
       return res.status(200).json({
-        error: true, message: 'crew found Customer list',
-        data: customerCrewEntries
+        error: false,
+        message: customerCrewEntries.length ? 'Crew found Customer list' : 'No customer entries found',
+        data: customerCrewEntries,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / limit),
+        currentPage: page
       });
     }
 
@@ -105,29 +113,28 @@ exports.getCustomerlist = async (req, res) => {
       return res.status(404).json({ error: true, message: 'User not found' });
     }
 
-    if (user.Jwttoken) {
-      const userTokenMatch = token === user.Jwttoken;
-      if (!userTokenMatch) {
-        return res.status(404).json({ error: true, message: 'User Login Another Device' });
-      }
+    if (user?.Jwttoken && token !== user.Jwttoken) {
+      return res.status(404).json({ error: true, message: 'User Login Another Device' });
     }
 
+    // Pagination setup
+    let page = parseInt(req.query.page) || 1;
+    let limit = 10;
+    let skip = (page - 1) * limit;
 
-    const customerRef = user.customerRef;
-    const customerEntries = await customerEntry.find({ customerRef, __v: 0 });
-
-    if (!customerEntries || customerEntries.length === 0) {
-      return res.status(404).json({
-        error: true,
-        message: 'No customer entries found',
-        data: Array()
-      });
-    }
+    const totalRecords = await customerEntry.countDocuments({ customerRef: user.customerRef });
+    const customerEntries = await customerEntry.find({ customerRef: user.customerRef })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
     return res.status(200).json({
       error: false,
-      message: 'Customer entries retrieved successfully',
+      message: customerEntries.length ? 'Customer entries retrieved successfully' : 'No customer entries found',
       data: customerEntries,
+      totalRecords,
+      totalPages: Math.ceil(totalRecords / limit),
+      currentPage: page
     });
 
   } catch (error) {
@@ -157,70 +164,77 @@ exports.getBookinglist = async (req, res) => {
     const decodedToken = jwt.verify(token, process.env.ACCESS_SECRET_TOKEN);
     console.log('decoded token', decodedToken);
 
-    if (!decodedToken) {
-      console.error("Failed to decode token:", token);
-      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-    }
-
-    if (!decodedToken.customerRef) {
-      console.error("Missing customerRef in token:", decodedToken);
-      return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
-    }
-
-    if (!decodedToken.userId) {
-      console.error("Missing userId in token:", decodedToken);
+    if (!decodedToken || !decodedToken.customerRef || !decodedToken.userId) {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
 
     const userId = decodedToken.userId;
     const user = await User.findById(userId);
-    // const userBookings = await booking.find({ customerId: decodedToken.userid });
+
+    // Fixed pagination (Always 10 records per page)
+    let { page = 1 } = req.query;
+    page = parseInt(page);
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    let bookings = [];
+    let totalBookings = 0;
 
     if (!user) {
-      const crewBookings = await booking.find({ crewId: decodedToken.crewid, __v: 0 });
+      // Fetch crew bookings
+      totalBookings = await booking.countDocuments({ crewId: decodedToken.crewid });
+      bookings = await booking.find({ crewId: decodedToken.crewid })
+        .skip(skip)
+        .limit(limit)
+        .select('-__v');
 
-      if (!crewBookings || crewBookings.length === 0) {
-        return res.status(200).json({
-          error: true,
-          message: "No bookings found for the crew member",
-          data: []
-        });
-      } else {
-        return res.status(200).json({
-          error: false,
-          message: "Bookings retrieved for crew member",
-          data: crewBookings
-        });
-      }
+      return res.status(200).json({
+        error: false,
+        message: "Bookings retrieved for crew member",
+        data: bookings,
+        totalRecords: totalBookings,
+        totalPages: Math.ceil(totalBookings / limit),
+        currentPage: page
+      });
     }
 
-    // User is found, proceed to fetch bookings based on customerRef
+    // Fetch user details
     const foundUser = await registrionapi.findOne({ customerRef: decodedToken.customerRef });
-
     if (!foundUser) {
       return res.status(404).json({ error: true, message: 'User not found in custom API model' });
     }
 
+    // Fetch bookings based on customerRef
     const customerRef = user.customerRef;
-    const bookingEntries = await booking.find({ customerRef, __v: 0 });
+    totalBookings = await booking.countDocuments({ customerRef });
 
-    if (!bookingEntries || bookingEntries.length === 0) {
-      return res.status(404).json({ error: true, message: 'No customer entries found for this customer', data: [] });
+    bookings = await booking.find({ customerRef })
+      .skip(skip)
+      .limit(limit)
+      .select('-__v');
+
+    if (bookings.length === 0) {
+      return res.status(404).json({ error: true, message: 'No bookings found', data: [] });
     }
 
     return res.status(200).json({
       error: false,
       message: 'Booking entries retrieved successfully',
-      data: bookingEntries,
+      data: bookings,
+      totalRecords: totalBookings,
+      totalPages: Math.ceil(totalBookings / limit),
+      currentPage: page
     });
+
   } catch (error) {
-    console.error('Error fetching customer entries:', error.message);
+    console.error('Error fetching bookings:', error.message);
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ error: true, message: 'Unauthorized: Invalid token' });
     }
     return res.status(500).json({ error: true, message: error.message });
   }
 };
+
 
 
 //----------------------------------------------Enquier Api --------------------------------------
@@ -332,7 +346,8 @@ exports.enquiery = async (req, res) => {
 //--------------------------------Get Enquery -----------------------------------------------------
 exports.getEnquerylist = async (req, res) => {
   const authToken = req.headers.authorization;
-  console.log("token", authToken)
+  console.log("token", authToken);
+
   if (!authToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized: Missing authorization token' });
   }
@@ -369,43 +384,52 @@ exports.getEnquerylist = async (req, res) => {
         return res.status(404).json({ error: true, message: 'User Login Another Device' });
       }
     }
+
+    // Pagination setup
+    let page = parseInt(req.query.page) || 1;
+    let limit = 10;
+    let skip = (page - 1) * limit;
+
     if (decodedToken.crewid) {
-      const crewEnquieryData = await enquiery.find({ crewId: decodedToken.crewid, customerRef: decodedToken.customerRef, __v: 0});
-      if (crewEnquieryData) {
-        return res.status(200).json({
-          error: false,
-          message: "Enquery retrieved for crew member",
-          data: crewEnquieryData
-        });
-      } else {
-        return res.status(200).json({
-          error: true,
-          message: "No enquiery found for the crew member",
-          data: []
-        });
-      }
+      const totalRecords = await enquiery.countDocuments({ crewId: decodedToken.crewid, customerRef: decodedToken.customerRef });
+      const crewEnquieryData = await enquiery.find({ crewId: decodedToken.crewid, customerRef: decodedToken.customerRef })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      return res.status(200).json({
+        error: false,
+        message: crewEnquieryData.length ? "Enquiry retrieved for crew member" : "No enquiry found for the crew member",
+        data: crewEnquieryData,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / limit),
+        currentPage: page
+      });
     }
 
     if (!user) {
-      return res.status(404).json({ error: true, message: 'User not found ' });
+      return res.status(404).json({ error: true, message: 'User not found' });
     }
 
-   
     const customerRef = user.customerRef;
-    const enquieryEntries = await enquiery.find({ customerRef, __v: 0 });
-
-    if (!enquieryEntries || enquieryEntries.length === 0) {
-      return res.status(404).json({ error: true, message: 'No customer entries found for this customer', data: [] });
-    }
+    const totalRecords = await enquiery.countDocuments({ customerRef });
+    const enquieryEntries = await enquiery.find({ customerRef })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
     return res.status(200).json({
       error: false,
-      message: 'Enquiery Entries retrieved successfully',
+      message: enquieryEntries.length ? 'Enquiry Entries retrieved successfully' : 'No customer entries found for this customer',
       data: enquieryEntries,
+      totalRecords,
+      totalPages: Math.ceil(totalRecords / limit),
+      currentPage: page
     });
-    
+
   } catch (error) {
     console.error('Error fetching customer entries:', error.message);
     return res.status(500).json({ error: true, message: error.message });
   }
 };
+

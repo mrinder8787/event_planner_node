@@ -2,12 +2,14 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const connectDB = require('./Config/db');
+const bodyParser = require('body-parser');
 const Routes =  require('./routers/products');
 const path = require('path');
 const app = express();
+
 app.use(cors());
 app.use(express.json());
-
+app.use(express.urlencoded({ extended: true }));
 require('dotenv').config();
 
 const PORT = process.env.PORT || 5000;

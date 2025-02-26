@@ -60,7 +60,7 @@ exports.allItemCount = async (req, res) => {
         const crewCount = await crewData.countDocuments({ customerRef: decodedToken.customerRef ,__v:0});
         const enquieryCount = await enquieryData.countDocuments({ customerRef: decodedToken.customerRef ,__v:0});
         const customerCount = await customerData.countDocuments({ customerRef: decodedToken.customerRef ,__v:0});
-        const eventRequest = await userRequest.countDocuments({customerRef: decodedToken.customerRef});
+        const eventRequest = await userRequest.countDocuments({customerRef: decodedToken.customerRef,status: { $ne: "Book by Owner" }});
         return res.status(200).json({
             error: false,
             message: 'Counts retrieved successfully',

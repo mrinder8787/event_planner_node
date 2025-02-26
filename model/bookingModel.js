@@ -85,6 +85,9 @@ const bookingShecma = new mongoose.Schema({
     type:String,
     required:true
    },
+   userId:{
+    type:String,
+   },
    advanceAmount:{
     type:String,
     required:true

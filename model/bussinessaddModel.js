@@ -18,6 +18,10 @@ const BusinessSchema = new Schema({
     type: String,
     required: true
   },
+  pinCode: {
+    type: String,
+    required: true
+  },
   fullAdress: {
     type: String,
     required: true
@@ -31,6 +35,9 @@ const BusinessSchema = new Schema({
     required: true
   },
   businessDescription: {
+    type: String,
+  },
+  GSTNo: {
     type: String,
   },
   customerRef:{

@@ -1,4 +1,7 @@
-
+require('dotenv').config();
+const { google } = require('googleapis');
+var https = require('follow-redirects').https;
+const serviceAccount = require("../Services/notificationService.json")
 
 exports.gstCalculater = async (req, res) => {
     const { originalAmount, gstRate, transactionType } = req.body;
@@ -51,3 +54,81 @@ exports.gstCalculater = async (req, res) => {
     }
   };
   
+
+async function getAccessToken() {
+  const auth = new google.auth.GoogleAuth({
+    credentials: serviceAccount,
+    scopes: [
+      "https://www.googleapis.com/auth/firebase.messaging",
+      "https://www.googleapis.com/auth/cloud-platform",
+    ],
+  });
+
+  const accessTokenResponse = await auth.getAccessToken();
+  return accessTokenResponse.token || accessTokenResponse;
+}
+
+
+
+exports.sendNotification = async (req, res) => {
+  const { token, title, body, route } = req.body;
+  const accessTokenResponse = await getAccessToken();
+  var options = {
+    'method': 'POST',
+    'hostname': 'fcm.googleapis.com',
+    'path': '/v1/projects/eventplanner-f7fb5/messages:send',
+    'headers': {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessTokenResponse}`
+    },
+    'maxRedirects': 20
+  };
+
+  var reqFCM = https.request(options, function (fcmRes) {
+    var chunks = [];
+
+    fcmRes.on("data", function (chunk) {
+      chunks.push(chunk);
+    });
+
+    fcmRes.on("end", function () {
+      var body = Buffer.concat(chunks);
+    
+      console.log(body.toString());
+
+      
+      res.status(fcmRes.statusCode).send({
+        error:false,
+        message:"Notification sende",
+        data:body.toString()
+      });
+    });
+
+    fcmRes.on("error", function (error) {
+      console.error(error);
+      res.status(500).send({ error: 'Error while sending notification' });
+    });
+  });
+
+  var postData = JSON.stringify({
+    "message": {
+      "token": token,
+      "notification": {
+        "title": title,
+        "body": body
+      },
+      "data": {
+        "route": route
+      }
+    }
+  });
+
+  reqFCM.write(postData);
+  reqFCM.end();
+};
+
+
+
+
+
+

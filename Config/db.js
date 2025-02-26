@@ -3,7 +3,11 @@ require('dotenv').config();
 
 const connectDB = async () => {
   try {
-    const MONGODB_URI = process.env.MONGO_DB_URL || 'mongodb://127.0.0.1/event-planner';
+    const MONGODB_URI = process.env.MONGO_DB_URL || 'mongodb://127.0.0.1/event_planner';
+    
+    console.log('Connecting to MongoDB...');
+    
+    // Connect to MongoDB
     await mongoose.connect(MONGODB_URI);
 
     console.log('Connected to MongoDB');
