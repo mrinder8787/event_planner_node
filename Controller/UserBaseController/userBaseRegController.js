@@ -12,7 +12,7 @@ const generateUserId = () => {
     return `User_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 };
 
-console.log(generateUserId());
+
 
 
 exports.genrateOTPUser = async (req, res) => {

@@ -2,11 +2,10 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const connectDB = require('./Config/db');
-const bodyParser = require('body-parser');
 const Routes =  require('./routers/products');
 const path = require('path');
 const app = express();
-
+const adminRoutes = require('./routers/adminRoute');
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -18,6 +17,7 @@ connectDB();
 const server = http.createServer(app);
 
 app.use('/api', Routes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/crewImage', express.static(path.join(__dirname, 'crewImage')));
 

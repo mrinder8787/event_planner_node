@@ -9,7 +9,8 @@ const validateQuotation = [
     body("toDate").isISO8601().toDate().withMessage("Valid toDate is required"),
     body("pinCode").isNumeric().withMessage("Pin code must be a number"),
     body("subTotalAmount").isNumeric().withMessage("SubTotalAmount must be a number"),
-    body("TotalAmount").isNumeric().withMessage("TotalAmount must be a number"),
+    body("TotalAmount").isNumeric().withMessage("TotalAmount must be a number"),//discount
+    body("discount").notEmpty().withMessage("discountis is required"),
     body("includeGstAmount").isNumeric().withMessage("includeGstAmount must be a number"),
    
     body("bookingitem")

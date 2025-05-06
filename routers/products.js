@@ -3,6 +3,9 @@ const router = express.Router();
 
 
 const { validateRegistration } = require('../middleware/validation');
+const { validateQuotation } = require("../middleware/quotationMiddleware");
+const upload = require("../middleware/quotationPdf");
+
 const postController = require('../Controller/firstapicontroler');
 const loginController = require('../Controller/loginController');
 const customerEntryController=require('../Controller/customerEntry');
@@ -32,10 +35,11 @@ const ownerEventController = require("../Controller/UserBaseController/eventbook
 const userFcmTokenController = require("../Controller/UserBaseController/usersaveFsmToken");
 const userPaymentAmount = require("../Controller/UserBaseController/advancePaymentController");
 const gstCalculaterController = require("../Controller/gstCalculater");
-const { validateQuotation } = require("../middleware/quotationMiddleware");
+
 const quotationController = require("../Controller/quotationController");
 const sendQuotationEmail = require("../Controller/quotationMailController");
-const upload = require("../middleware/quotationPdf");
+
+const mobileAppContro = require("../Controller/AppVersion/mobileappContr");
 
 //------------------------------------Start Route Post--------------------------------------------
 
@@ -94,7 +98,7 @@ router.put("/bookingStatusUpadte/:id",bookingController.bookingStatusUpdate);
 router.put("/bookingDelete/:_id",bookingController.bookingDelete);
 router.put("updateQuoation/:id", validateQuotation,quotationController.updateQuotation);
 //-------------------------------get Api -----------------------------
-
+router.get("/getApp",mobileAppContro.mobileAppController);
 router.get("/allItem-Count",allItemCount.allItemCount);
 router.get('/bookinglist',postController.getBookinglist);
 router.get('/customerlist',postController.getCustomerlist);

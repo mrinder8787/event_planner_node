@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const registrionapi = require('../model/registrion');
 const crewentry = require('../model/crewentry');
-const sendMail = require('../Controller/mailController');
+const {sendMail} = require('../Controller/mailController');
 require('dotenv').config();
 
 const generateOTP = () => {
@@ -21,9 +21,12 @@ exports.forgotPassword = async (req, res) => {
     if (!userFound) {
       return res.status(404).json({ error: true, message: 'User not found' });
     }
-
+    userFound.resetPasswordOTP = undefined;
+    userFound.resetPasswordOTPExpires = undefined;
+    await userFound.save();
+    
     const otp = generateOTP();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     if (!userFound.resetPasswordOTP || !userFound.resetPasswordOTPExpires) {
       userFound.resetPasswordOTP = otp;
